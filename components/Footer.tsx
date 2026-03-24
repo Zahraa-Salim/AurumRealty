@@ -20,7 +20,7 @@ export const revalidate = 60
 // ─── Defaults (shown when DB has no saved values) ────────────────────────────
 
 const DEFAULTS = {
-  tagline:    'Founded 2010. Luxury properties for discerning buyers.',
+  tagline:    'Founded 2010. \nLuxury properties for discerning buyers.\nFor over a decade we have guided discerning buyers and sellers through the most significant real estate decisions of their lives — with discretion, expertise, and an unwavering commitment to excellence.\nEvery property we represent is selected for its exceptional quality. Every client we serve receives our full attention.',
   phone:      '+1 (555) 123-4567',
   email:      'hello@aurumrealty.com',
   address:    '123 Luxury Avenue\nSuite 400\nNew York, NY 10022',
@@ -77,7 +77,7 @@ export async function Footer() {
   const phone      = general.phone       || DEFAULTS.phone
   const email      = general.email       || DEFAULTS.email
   const address    = general.address     || DEFAULTS.address
-  const tagline    = general.tagline     || DEFAULTS.tagline
+  const tagline    = DEFAULTS.tagline
   const monFri     = hours.monFri        || DEFAULTS.monFri
   const saturday   = hours.saturday      || DEFAULTS.saturday
   const sunday     = hours.sunday        || DEFAULTS.sunday
@@ -107,7 +107,7 @@ export async function Footer() {
             <div className="mb-4">
               <AurumLogo variant="dark" height={30} />
             </div>
-            <p className="font-sans text-[13px] text-taupe leading-[1.7]">
+            <p className="font-sans text-[13px] text-taupe leading-[1.8]">
               {tagline}
             </p>
           </div>

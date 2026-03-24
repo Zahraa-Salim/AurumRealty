@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F5E6D3;
+  --color-gold: #D4AF37;
+  --color-gold-dark: #C69E2C;
+  --color-charcoal: #1F1F1F;
+  --color-light-gray: #E8E6E1;
+  --color-mid-gray: #8C8985;
+  --color-taupe: #7A7571;
+  --color-error: #D32F2F;
+  --color-success: #388E3C;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --radius-sm: 4px;
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-focus: 0 0 0 3px rgba(212,175,55,0.15);
+  --shadow-nav: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+body {
+  background-color: #ffffff;
+  color: #1f1f1f;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100%;
+  position: relative;
+}
+
+::selection {
+  background-color: #d4af37;
+  color: #1f1f1f;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Dashboard sidebar — hide scrollbar while keeping scroll functional ── */
+.sidebar-scroll::-webkit-scrollbar {
+  display: none;
+}

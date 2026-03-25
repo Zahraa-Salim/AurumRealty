@@ -2,7 +2,6 @@
 
 A full-stack luxury real estate platform built with Next.js 16, React 19, Prisma 6, and PostgreSQL. Features a public-facing website for clients and a private admin dashboard for the agency team with dynamic role-based access control.
 
----
 
 ## Tech Stack
 
@@ -17,7 +16,6 @@ A full-stack luxury real estate platform built with Next.js 16, React 19, Prisma
 | Image uploads | Local disk (dev) · S3-compatible storage (prod) |
 | Deployment | Vercel |
 
----
 
 ## Project Structure
 
@@ -94,7 +92,6 @@ Ten models across three domains:
 
 **Access control** — `User` · `Role` · `Permission` · `RolePermission`
 
----
 
 ## Role-Based Access Control
 
@@ -288,7 +285,6 @@ ALTER TABLE "User"
 | `UPLOAD_STORAGE` | Optional | Force `local` or `s3` regardless of environment |
 | `UPLOAD_MAX_SIZE_MB` | Optional | Max upload size in MB (default: 10) |
 
----
 
 ## Available Scripts
 
@@ -299,7 +295,6 @@ npm run start    # Start production server
 npm run lint     # Run ESLint
 ```
 
----
 
 ## Dashboard Overview
 
@@ -324,7 +319,6 @@ The dashboard at `/dashboard` is a protected area accessible only to authenticat
 - Update company contact details, office hours, and social links
 - Changes reflect immediately on the public website footer and contact page
 
---
 
 ## Design System
 

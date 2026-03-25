@@ -130,7 +130,7 @@ Super Admin can create custom roles with any combination of the 25 available per
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/aurum-realty.git
+git clone https://github.com/Zahraa-Salim/aurum-realty.git
 cd aurum-realty
 npm install
 ```
@@ -212,58 +212,6 @@ Uploads are handled by `lib/upload-storage.ts`, which automatically selects the 
 - Backblaze B2
 
 Accepted formats: JPEG · PNG · WebP · GIF · Max 10 MB (configurable via `UPLOAD_MAX_SIZE_MB`)
-
----
-
-## Deployment
-
-### Vercel (recommended)
-
-**1. Push to GitHub**
-
-```bash
-git add .
-git commit -m "initial commit"
-git push origin main
-```
-
-Make sure `.env` is not committed. It should be in `.gitignore` already.
-
-**2. Import into Vercel**
-
-Go to [vercel.com](https://vercel.com) → Add New Project → import your repository. Vercel auto-detects Next.js.
-
-**3. Set environment variables**
-
-In Vercel → Settings → Environment Variables, add:
-
-| Variable | Value |
-|---|---|
-| `DATABASE_URL` | Your Neon connection string |
-| `NEXTAUTH_SECRET` | New secret: `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | `https://your-app.vercel.app` |
-| `S3_REGION` | e.g. `us-east-1` |
-| `S3_BUCKET` | Your bucket name |
-| `S3_PUBLIC_URL` | e.g. `https://your-bucket.s3.amazonaws.com` |
-| `S3_ACCESS_KEY_ID` | IAM access key |
-| `S3_SECRET_ACCESS_KEY` | IAM secret key |
-
-**4. Deploy**
-
-Click Deploy. After the first deploy, update `NEXTAUTH_URL` to your actual Vercel URL and redeploy.
-
-**5. Run migrations on production**
-
-```bash
-DATABASE_URL="your-neon-connection-string" npx prisma migrate deploy
-```
-
-Or run this directly in the Neon SQL editor:
-
-```sql
-ALTER TABLE "User"
-  ADD COLUMN IF NOT EXISTS "permissionsVersion" INTEGER NOT NULL DEFAULT 0;
-```
 
 ---
 

@@ -324,7 +324,7 @@ The dashboard at `/dashboard` is a protected area accessible only to authenticat
 - Update company contact details, office hours, and social links
 - Changes reflect immediately on the public website footer and contact page
 
----
+--
 
 ## Design System
 
@@ -338,8 +338,3 @@ The dashboard at `/dashboard` is a protected area accessible only to authenticat
 
 Typography: Georgia serif for headings · System sans-serif for body text
 
----
-
-## License
-
-Private — all rights reserved.

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ImageUpload from '@/components/ImageUpload'
+import { RichTextEditor } from '@/components/RichTextEditor'
 import { DashboardAccessDenied } from '@/components/dashboard/DashboardAccessDenied'
 import { BLOG_AUTHOR_OPTIONS, BLOG_TOPIC_OPTIONS } from '@/lib/content-options'
 import { hasAnyPermission } from '@/lib/rbac'
@@ -189,9 +190,12 @@ export default function DashboardEditBlogPostPage() {
           </div>
           <div className="flex flex-col gap-2">
             <label className="font-sans text-[13px] font-medium text-charcoal">Body</label>
-            <textarea value={body} onChange={e => setBody(e.target.value)} rows={15}
-              className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y min-h-[200px]"
-              style={{borderWidth:'0.5px'}} />
+            <RichTextEditor
+              value={body}
+              onChange={setBody}
+              placeholder="Write your article here…"
+              minHeight={400}
+            />
           </div>
           <div className="flex flex-col gap-2">
             <label className="font-sans text-[13px] font-medium text-charcoal">Pull quote <span className="font-normal text-taupe">(optional)</span></label>

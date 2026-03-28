@@ -9,6 +9,8 @@ import Link from 'next/link'
 import type { NewsArticle } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getServerLocale } from '@/lib/locale-server'
+import { localise } from '@/lib/i18n'
 
 export const revalidate = 60
 
@@ -42,34 +44,20 @@ export default async function NewsDetailPage({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const { slug } = await params // ✅ FIXED
+  const { slug } = await params
+  const locale = await getServerLocale()
 
   let article: NewsArticle | null = null
   let related: RelatedNewsArticle[] = []
 
   try {
-    // ✅ FIXED: findUnique only uses unique field
-    article = await prisma.newsArticle.findUnique({
-      where: { slug },
-    })
-
-    // ✅ FIXED: check isPublished separately
+    article = await prisma.newsArticle.findUnique({ where: { slug } })
     if (!article || !article.isPublished) notFound()
-
     related = await prisma.newsArticle.findMany({
-      where: {
-        isPublished: true,
-        slug: { not: slug }, // ✅ FIXED
-      },
+      where: { isPublished: true, slug: { not: slug } },
       orderBy: { publishedAt: 'desc' },
       take: 3,
-      select: {
-        slug: true,
-        title: true,
-        category: true,
-        heroImage: true,
-        publishedAt: true,
-      },
+      select: { slug: true, title: true, category: true, heroImage: true, publishedAt: true },
     })
   } catch {
     notFound()
@@ -79,16 +67,20 @@ export default async function NewsDetailPage({
     notFound()
   }
 
-  const fmt = (d: Date | string | null) =>
-    d
-      ? new Date(d).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : ''
+  const title   = localise(article.title,   (article as any).titleAr,   locale)
+  const summary = localise(article.summary, (article as any).summaryAr, locale)
+  const rawBody = (locale === 'ar' && (article as any).bodyAr) ? (article as any).bodyAr : article.body
 
-  const paras = (article.body || '').split('\n\n').filter(Boolean)
+  const fmt = (d: Date | string | null) =>
+    d ? new Date(d).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+
+  const isHtml = (rawBody || '').trimStart().startsWith('<')
+  const bodyHtml = isHtml
+    ? rawBody ?? ''
+    : (rawBody || '').split('\n\n').filter(Boolean)
+        .map((para: string) =>
+          para.startsWith('## ') ? `<h2>${para.replace('## ', '')}</h2>` : `<p>${para}</p>`
+        ).join('')
 
   return (
     <main className="w-full bg-white pb-24">
@@ -115,7 +107,7 @@ export default async function NewsDetailPage({
           </span>
 
           <h1 className="font-serif text-[28px] md:text-[40px] text-white leading-[1.2]">
-            {article.title}
+            {title}
           </h1>
         </div>
       </div>
@@ -130,7 +122,7 @@ export default async function NewsDetailPage({
             href="/news"
             className="font-sans text-[13px] hover:text-charcoal no-underline transition-colors"
           >
-            ← News
+            {locale === 'ar' ? '→ الأخبار' : '← News'}
           </Link>
 
           <span className="text-light-gray">·</span>
@@ -144,31 +136,16 @@ export default async function NewsDetailPage({
           </span>
         </div>
 
-        {article.summary && (
+        {summary && (
           <p className="font-sans text-[16px] text-taupe italic leading-[1.7] mb-8 pl-5 border-l-[3px] border-gold">
-            {article.summary}
+            {summary}
           </p>
         )}
 
-        <div className="space-y-6">
-          {paras.map((para: string, i: number) =>
-            para.startsWith('## ') ? (
-              <h2
-                key={i}
-                className="font-serif text-[22px] text-charcoal leading-[1.3] mt-10 mb-2"
-              >
-                {para.replace('## ', '')}
-              </h2>
-            ) : (
-              <p
-                key={i}
-                className="font-sans text-[15px] text-taupe leading-[1.8]"
-              >
-                {para}
-              </p>
-            )
-          )}
-        </div>
+        <div
+          className="article-body"
+          dangerouslySetInnerHTML={{ __html: bodyHtml }}
+        />
 
         {/* CTA */}
         <div

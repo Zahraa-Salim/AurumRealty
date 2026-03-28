@@ -10,28 +10,31 @@ datasource db {
 // ─── PROPERTIES ───────────────────────────────────────────────────────────────
 
 model Property {
-  id           Int       @id @default(autoincrement())
-  title        String
-  price        String
-  address      String
+  id            Int       @id @default(autoincrement())
+  title         String
+  titleAr       String?   // Arabic translation
+  price         String
+  address       String
   neighbourhood String
-  status       String    // "For Sale" | "For Rent" | "New Development"
-  type         String    // "Estate" | "Villa" | "Penthouse" | "Townhouse" | "Apartment"
-  bedrooms     Int
-  bathrooms    Float
-  area         String
-  yearBuilt    String?
-  lotSize      String?
-  description  String?
-  features     String[]
-  images       String[]  // array of image URLs
-  agentName    String?
-  isPublished  Boolean   @default(false)
+  status        String    // "For Sale" | "For Rent" | "New Development"
+  type          String    // "Estate" | "Villa" | "Penthouse" | "Townhouse" | "Apartment"
+  bedrooms      Int
+  bathrooms     Float
+  area          String
+  yearBuilt     String?
+  lotSize       String?
+  description   String?
+  descriptionAr String?   // Arabic translation
+  features      String[]
+  featuresAr    String[]  // Arabic translations of features
+  images        String[]  // array of image URLs
+  agentName     String?
+  isPublished   Boolean   @default(false)
   listingExpiresAt DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  showings     Showing[]
+  showings      Showing[]
 }
 
 // ─── BLOG ─────────────────────────────────────────────────────────────────────
@@ -39,12 +42,16 @@ model Property {
 model BlogPost {
   id          Int      @id @default(autoincrement())
   title       String
+  titleAr     String?  // Arabic translation
   slug        String   @unique
   topic       String
   author      String
   subtitle    String?
+  subtitleAr  String?  // Arabic translation
   body        String
+  bodyAr      String?  // Arabic translation
   pullQuote   String?
+  pullQuoteAr String?  // Arabic translation
   heroImage   String?
   readTime    String?
   isPublished Boolean  @default(false)
@@ -58,11 +65,14 @@ model BlogPost {
 model NewsArticle {
   id          Int      @id @default(autoincrement())
   title       String
+  titleAr     String?  // Arabic translation
   slug        String   @unique
   category    String
   author      String
   summary     String
+  summaryAr   String?  // Arabic translation
   body        String
+  bodyAr      String?  // Arabic translation
   heroImage   String?
   isPublished Boolean  @default(false)
   publishedAt DateTime?
@@ -84,19 +94,24 @@ model Showing {
   time         String?
   message      String
   status       String   @default("New") // "New" | "Confirmed" | "Completed" | "Cancelled"
+  assignedToId Int?
   createdAt    DateTime @default(now())
 
   property     Property? @relation(fields: [propertyId], references: [id])
+  assignedTo   User?     @relation("AssignedShowings", fields: [assignedToId], references: [id], onDelete: SetNull)
 }
 
 model ContactMessage {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  phone     String?
-  message   String
-  status    String   @default("Unread") // "Unread" | "Read" | "Replied"
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String
+  phone        String?
+  message      String
+  status       String   @default("Unread") // "Unread" | "Read" | "Replied"
+  assignedToId Int?
+  createdAt    DateTime @default(now())
+
+  assignedTo   User?    @relation("AssignedMessages", fields: [assignedToId], references: [id], onDelete: SetNull)
 }
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
@@ -113,7 +128,9 @@ model User {
   createdAt  DateTime @default(now())
   lastActive DateTime?
 
-  assignedRole Role?  @relation("AssignedRole", fields: [roleId], references: [id], onDelete: SetNull)
+  assignedRole     Role?           @relation("AssignedRole", fields: [roleId], references: [id], onDelete: SetNull)
+  assignedShowings Showing[]       @relation("AssignedShowings")
+  assignedMessages ContactMessage[] @relation("AssignedMessages")
 }
 
 model Role {
@@ -151,13 +168,17 @@ model RolePermission {
 }
 
 model SiteContent {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique  // "home_hero", "home_cta", "about_story", "service_1" etc.
-  title     String?
-  subtitle  String?
-  body      String?
-  image     String?
-  linkText  String?
-  linkUrl   String?
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  key        String   @unique  // "home_hero", "home_cta", "about_story", "service_1" etc.
+  title      String?
+  titleAr    String?  // Arabic translation
+  subtitle   String?
+  subtitleAr String?  // Arabic translation
+  body       String?
+  bodyAr     String?  // Arabic translation
+  image      String?
+  linkText   String?
+  linkTextAr String?  // Arabic translation
+  linkUrl    String?
+  updatedAt  DateTime @updatedAt
 }

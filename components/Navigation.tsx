@@ -13,6 +13,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AurumLogo } from '@/components/AurumLogo'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 const navLinks = [
   { label: 'Home',       path: '/' },
@@ -24,26 +25,41 @@ const navLinks = [
 ]
 
 export function Navigation() {
-  const [mounted,    setMounted]    = useState(false)
-  const [visible,    setVisible]    = useState(false)
-  const [scrolled,   setScrolled]   = useState(false)
+  const [isOpen,   setIsOpen]   = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const previousPathname = useRef(pathname)
+  const unmountTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const openMenu  = useCallback(() => {
+  // Derive mounted/visible from single isOpen boolean
+  const [mounted, setMounted] = useState(false)
+
+  const openMenu = useCallback(() => {
+    if (unmountTimerRef.current) clearTimeout(unmountTimerRef.current)
     setMounted(true)
-    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+    // Use a single RAF — by the time the next frame fires the element is in the DOM
+    requestAnimationFrame(() => setIsOpen(true))
   }, [])
 
   const closeMenu = useCallback(() => {
-    setVisible(false)
-    setTimeout(() => setMounted(false), 320)
+    setIsOpen(false)
+    // Wait for the CSS transition (320ms) before removing from DOM
+    unmountTimerRef.current = setTimeout(() => setMounted(false), 320)
   }, [])
+
+  const visible = isOpen
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
+  }, [])
+
+  // Clean up unmount timer on component destroy
+  useEffect(() => {
+    return () => {
+      if (unmountTimerRef.current) clearTimeout(unmountTimerRef.current)
+    }
   }, [])
 
   // close on route change
@@ -63,9 +79,9 @@ export function Navigation() {
 
   // lock scroll
   useEffect(() => {
-    document.body.style.overflow = mounted ? 'hidden' : ''
+    document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [mounted])
+  }, [isOpen])
 
   const isActive = (path: string) =>
     path === '/' ? pathname === '/' : pathname.startsWith(path)
@@ -107,7 +123,8 @@ export function Navigation() {
           </div>
 
           {/* DESKTOP CTA */}
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/contact"
               className={`font-sans text-[13px] font-medium px-5 py-2 rounded-full transition-all duration-200 no-underline border ${
@@ -122,12 +139,12 @@ export function Navigation() {
 
           {/* MOBILE TRIGGER — grid icon (four dots) */}
           <button
-            onClick={mounted ? closeMenu : openMenu}
+            onClick={isOpen ? closeMenu : openMenu}
             className="lg:hidden relative w-10 h-10 flex items-center justify-center bg-transparent border-none cursor-pointer z-10"
-            aria-label={mounted ? 'Close menu' : 'Open menu'}
-            aria-expanded={mounted}
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen}
           >
-            {mounted && visible ? (
+            {isOpen && visible ? (
               /* X icon when open */
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-charcoal transition-all duration-200">
                 <path d="M18 6 6 18M6 6l12 12"/>
@@ -233,10 +250,11 @@ export function Navigation() {
             </div>
 
             {/* panel footer */}
-            <div className="px-6 py-4 border-t border-light-gray" style={{ borderWidth: '0.5px 0 0 0' }}>
+            <div className="px-6 py-4 border-t border-light-gray flex items-center justify-between" style={{ borderWidth: '0.5px 0 0 0' }}>
               <p className="font-sans text-[12px] text-taupe">
                 +1 (555) 123-4567 · hello@aurumrealty.com
               </p>
+              <LanguageSwitcher />
             </div>
           </div>
         </div>

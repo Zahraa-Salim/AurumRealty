@@ -4,6 +4,8 @@ export type DashboardStatCard = {
   value: number
   label: string
   link: string
+  icon: 'properties' | 'blog' | 'news' | 'messages' | 'showings' | 'users'
+  accent: 'gold' | 'charcoal' | 'error' | 'success' | 'taupe'
 }
 
 export type DashboardTaskCard = {
@@ -11,6 +13,7 @@ export type DashboardTaskCard = {
   label: string
   hint: string
   href: string
+  urgent: boolean
 }
 
 export type DashboardAdminSummaryCard = {
@@ -20,8 +23,11 @@ export type DashboardAdminSummaryCard = {
 
 export type DashboardActivityItem = {
   id: string
-  message: string
+  type: 'showing' | 'enquiry' | 'message'
+  personName: string
+  detail: string
   createdAt: string
+  href: string
 }
 
 export type DashboardOverviewSnapshot = {
@@ -64,6 +70,9 @@ export type DashboardOverviewData = {
   adminSummaryCards: DashboardAdminSummaryCard[]
   activityItems: DashboardActivityItem[]
   generatedAt: string
+  userName: string
+  roleName: string
+  canViewOwnOnly: boolean
 }
 
 type PermissionState = {
@@ -75,6 +84,7 @@ type PermissionState = {
   canCreateNews: boolean
   canEditPages: boolean
   canViewSubmissions: boolean
+  canViewOwnSubmissions: boolean
   canViewUsers: boolean
   canViewRoles: boolean
   canViewSettings: boolean
@@ -91,6 +101,7 @@ export function getDashboardPermissionState(permissions: string[], roleName: str
     canCreateNews: hasAnyPermission(permissions, ['news.create']),
     canEditPages: hasAnyPermission(permissions, ['pages.edit']),
     canViewSubmissions: hasAnyPermission(permissions, ['submissions.view']),
+    canViewOwnSubmissions: hasAnyPermission(permissions, ['submissions.view.own']),
     canViewUsers: hasAnyPermission(permissions, ['users.view']),
     canViewRoles: hasAnyPermission(permissions, ['roles.view']),
     canViewSettings: hasAnyPermission(permissions, ['settings.view']),
@@ -100,6 +111,7 @@ export function getDashboardPermissionState(permissions: string[], roleName: str
 
 export function buildDashboardQuickActions(permissions: string[], roleName: string) {
   const state = getDashboardPermissionState(permissions, roleName)
+  const canSeeSubmissions = state.canViewSubmissions || state.canViewOwnSubmissions
 
   return [
     ...(state.canCreateProperties ? [{ label: 'Add property', href: '/dashboard/properties/new' }] : []),
@@ -108,8 +120,8 @@ export function buildDashboardQuickActions(permissions: string[], roleName: stri
     ...(state.canEditPages ? [{ label: 'Edit home page', href: '/dashboard/home' }] : []),
     ...(state.canEditPages ? [{ label: 'Edit about page', href: '/dashboard/about' }] : []),
     ...(state.canEditPages ? [{ label: 'Edit services page', href: '/dashboard/services' }] : []),
-    ...(state.canViewSubmissions ? [{ label: 'Review showing requests', href: '/dashboard/showings' }] : []),
-    ...(state.canViewSubmissions ? [{ label: 'Review contact messages', href: '/dashboard/contact-messages' }] : []),
+    ...(canSeeSubmissions ? [{ label: 'Review showing requests', href: '/dashboard/showings' }] : []),
+    ...(canSeeSubmissions ? [{ label: 'Review contact messages', href: '/dashboard/contact-messages' }] : []),
     ...(state.canViewUsers || state.canViewRoles ? [{ label: 'Manage users & roles', href: '/dashboard/users' }] : []),
     ...(state.canViewSettings ? [{ label: 'Open site settings', href: '/dashboard/settings' }] : []),
   ]
@@ -119,17 +131,20 @@ export function buildDashboardOverviewData(
   snapshot: DashboardOverviewSnapshot,
   permissions: string[],
   roleName: string,
+  userName = '',
 ): DashboardOverviewData {
   const state = getDashboardPermissionState(permissions, roleName)
   const { counts } = snapshot
+  const canSeeSubmissions = state.canViewSubmissions || state.canViewOwnSubmissions
+  const canViewOwnOnly = state.canViewOwnSubmissions && !state.canViewSubmissions
 
   const statCards: DashboardStatCard[] = [
-    ...(state.canViewProperties ? [{ value: counts.properties, label: 'Total properties', link: '/dashboard/properties' }] : []),
-    ...(state.canViewBlog ? [{ value: counts.blogPosts, label: 'Published posts', link: '/dashboard/blog' }] : []),
-    ...(state.canViewNews ? [{ value: counts.newsArticles, label: 'Published news', link: '/dashboard/news' }] : []),
-    ...(state.canViewSubmissions ? [{ value: counts.unreadMessages, label: 'Unread messages', link: '/dashboard/contact-messages' }] : []),
-    ...(state.canViewSubmissions ? [{ value: counts.newShowings, label: 'New showing requests', link: '/dashboard/showings' }] : []),
-    ...(state.canViewUsers ? [{ value: counts.users, label: 'Active users', link: '/dashboard/users' }] : []),
+    ...(state.canViewProperties ? [{ value: counts.properties, label: 'Total properties', link: '/dashboard/properties', icon: 'properties' as const, accent: 'gold' as const }] : []),
+    ...(state.canViewBlog ? [{ value: counts.blogPosts, label: 'Published posts', link: '/dashboard/blog', icon: 'blog' as const, accent: 'charcoal' as const }] : []),
+    ...(state.canViewNews ? [{ value: counts.newsArticles, label: 'Published news', link: '/dashboard/news', icon: 'news' as const, accent: 'taupe' as const }] : []),
+    ...(canSeeSubmissions ? [{ value: counts.unreadMessages, label: 'Unread messages', link: '/dashboard/contact-messages', icon: 'messages' as const, accent: 'error' as const }] : []),
+    ...(canSeeSubmissions ? [{ value: counts.newShowings, label: 'New showing requests', link: '/dashboard/showings', icon: 'showings' as const, accent: 'success' as const }] : []),
+    ...(state.canViewUsers ? [{ value: counts.users, label: 'Active users', link: '/dashboard/users', icon: 'users' as const, accent: 'charcoal' as const }] : []),
   ]
 
   const totalDrafts = counts.draftProperties + counts.draftBlogPosts + counts.draftNewsArticles
@@ -137,42 +152,46 @@ export function buildDashboardOverviewData(
   const pendingFollowUps = counts.readMessages + counts.confirmedShowings
 
   const draftBreakdown = [
-    counts.draftProperties > 0 ? `${counts.draftProperties} property drafts` : '',
-    counts.draftBlogPosts > 0 ? `${counts.draftBlogPosts} blog drafts` : '',
-    counts.draftNewsArticles > 0 ? `${counts.draftNewsArticles} news drafts` : '',
+    counts.draftProperties > 0 ? `${counts.draftProperties} property` : '',
+    counts.draftBlogPosts > 0 ? `${counts.draftBlogPosts} blog` : '',
+    counts.draftNewsArticles > 0 ? `${counts.draftNewsArticles} news` : '',
   ].filter(Boolean)
 
   const taskCards: DashboardTaskCard[] = [
-    ...(state.canViewSubmissions
+    ...(canSeeSubmissions
       ? [{
           value: unreadSubmissions,
           label: 'Unread submissions',
           hint: `${counts.newShowings} new showings · ${counts.unreadMessages} unread messages`,
           href: counts.newShowings > 0 ? '/dashboard/showings' : '/dashboard/contact-messages',
+          urgent: unreadSubmissions > 0,
         }]
       : []),
     ...((state.canViewProperties || state.canViewBlog || state.canViewNews)
       ? [{
           value: totalDrafts,
-          label: 'Drafts',
+          label: 'Drafts awaiting publish',
           hint: draftBreakdown.join(' · ') || 'No drafts waiting right now',
           href: state.canViewProperties ? '/dashboard/properties' : state.canViewBlog ? '/dashboard/blog' : '/dashboard/news',
+          urgent: totalDrafts > 0,
         }]
       : []),
     ...(state.canViewProperties
       ? [{
           value: counts.expiringListings,
           label: 'Expiring listings',
-          hint: 'Published listings expiring within the next 30 days',
+          hint: 'Published listings expiring within 30 days',
           href: '/dashboard/properties',
+          urgent: counts.expiringListings > 0,
         }]
       : []),
-    ...(state.canViewSubmissions
+    ...(canSeeSubmissions
       ? [{
           value: pendingFollowUps,
           label: 'Pending follow-ups',
           hint: `${counts.confirmedShowings} confirmed showings · ${counts.readMessages} read messages`,
           href: counts.confirmedShowings > 0 ? '/dashboard/showings' : '/dashboard/contact-messages',
+          urgent: pendingFollowUps > 0,
         }]
       : []),
   ]
@@ -186,21 +205,27 @@ export function buildDashboardOverviewData(
       ]
     : []
 
-  const activityItems: DashboardActivityItem[] = state.canViewSubmissions
+  const activityItems: DashboardActivityItem[] = canSeeSubmissions
     ? [
         ...snapshot.recentShowings.map((showing) => ({
           id: `showing-${showing.id}`,
+          type: showing.type === 'showing' ? 'showing' as const : 'enquiry' as const,
+          personName: showing.name,
+          detail: showing.propertyTitle ? `for ${showing.propertyTitle}` : '',
           createdAt: showing.createdAt,
-          message: `${showing.type === 'showing' ? 'a showing request' : 'an agent enquiry'} from ${showing.name}${showing.propertyTitle ? ` for ${showing.propertyTitle}` : ''}`,
+          href: '/dashboard/showings',
         })),
         ...snapshot.recentMessages.map((message) => ({
           id: `message-${message.id}`,
+          type: 'message' as const,
+          personName: message.name,
+          detail: 'sent a contact message',
           createdAt: message.createdAt,
-          message: `a contact message from ${message.name}`,
+          href: '/dashboard/contact-messages',
         })),
       ]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 6)
+        .slice(0, 8)
     : []
 
   return {
@@ -209,5 +234,8 @@ export function buildDashboardOverviewData(
     adminSummaryCards,
     activityItems,
     generatedAt: snapshot.generatedAt,
+    userName,
+    roleName,
+    canViewOwnOnly,
   }
 }

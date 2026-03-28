@@ -20,6 +20,7 @@ export default async function DashboardOverviewPage() {
   return (
     <DashboardOverviewClient
       roleName={session?.user?.role ?? 'User'}
+      userName={session?.user?.name ?? ''}
       permissions={permissions}
     />
   )

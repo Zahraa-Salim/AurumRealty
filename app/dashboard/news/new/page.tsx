@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ImageUpload from '@/components/ImageUpload'
+import { RichTextEditor } from '@/components/RichTextEditor'
 import { DashboardAccessDenied } from '@/components/dashboard/DashboardAccessDenied'
 import { hasAnyPermission } from '@/lib/rbac'
 
@@ -216,13 +217,11 @@ export default function DashboardNewNewsPage() {
               />
             </F>
             <F label="Body *">
-              <textarea
+              <RichTextEditor
                 value={body}
-                onChange={e => setBody(e.target.value)}
-                rows={16}
-                placeholder="Write your article here. Separate paragraphs with a blank line."
-                className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y leading-[1.8]"
-                style={{ borderWidth: '0.5px' }}
+                onChange={setBody}
+                placeholder="Write your article here…"
+                minHeight={400}
               />
             </F>
           </div>

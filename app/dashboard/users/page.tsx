@@ -90,9 +90,11 @@ export default function DashboardUsersRolesPage() {
 
   const [roleModalOpen, setRoleModalOpen] = useState(false)
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null)
+  const [editingRoleUsersCount, setEditingRoleUsersCount] = useState(0)
   const [roleForm, setRoleForm] = useState<RoleForm>({ name: '', description: '', permissionKeys: [] })
   const [roleError, setRoleError] = useState('')
   const [savingRole, setSavingRole] = useState(false)
+  const [permissionSearch, setPermissionSearch] = useState('')
   const [deleteRoleId, setDeleteRoleId] = useState<number | null>(null)
   const [deletingRole, setDeletingRole] = useState(false)
 
@@ -205,19 +207,23 @@ export default function DashboardUsersRolesPage() {
 
   const openCreateRole = () => {
     setEditingRoleId(null)
+    setEditingRoleUsersCount(0)
     setRoleForm({ name: '', description: '', permissionKeys: [] })
     setRoleError('')
+    setPermissionSearch('')
     setRoleModalOpen(true)
   }
 
   const openEditRole = (role: RoleRecord) => {
     setEditingRoleId(role.id)
+    setEditingRoleUsersCount(role.usersCount)
     setRoleForm({
       name: role.name,
       description: role.description ?? '',
       permissionKeys: role.permissionKeys,
     })
     setRoleError('')
+    setPermissionSearch('')
     setRoleModalOpen(true)
   }
 
@@ -227,6 +233,16 @@ export default function DashboardUsersRolesPage() {
       permissionKeys: current.permissionKeys.includes(permissionKey)
         ? current.permissionKeys.filter(key => key !== permissionKey)
         : [...current.permissionKeys, permissionKey],
+    }))
+  }
+
+  const handleGroupToggle = (groupPermissionKeys: string[]) => {
+    const allSelected = groupPermissionKeys.every(k => roleForm.permissionKeys.includes(k))
+    setRoleForm(current => ({
+      ...current,
+      permissionKeys: allSelected
+        ? current.permissionKeys.filter(k => !groupPermissionKeys.includes(k))
+        : [...new Set([...current.permissionKeys, ...groupPermissionKeys])],
     }))
   }
 
@@ -256,14 +272,29 @@ export default function DashboardUsersRolesPage() {
       }
 
       const savedRole = await res.json()
+
+      // Detect permissions silently dropped by the server (DB bootstrap not yet run)
+      const droppedKeys = roleForm.permissionKeys.filter(
+        (k: string) => !savedRole.permissionKeys.includes(k)
+      )
+      if (droppedKeys.length > 0) {
+        setRoleError(
+          `Role saved, but ${droppedKeys.length} permission(s) could not be linked because the ` +
+          `permission registry has not been fully initialised yet: ${droppedKeys.join(', ')}. ` +
+          `Re-open and save this role again after re-logging in to trigger initialisation.`
+        )
+      }
+
       setRoles(current => {
         if (editingRoleId) {
           return current.map(role => role.id === editingRoleId ? savedRole : role)
         }
-
         return [...current, savedRole].sort((a, b) => a.name.localeCompare(b.name))
       })
-      setRoleModalOpen(false)
+
+      if (droppedKeys.length === 0) {
+        setRoleModalOpen(false)
+      }
     } catch (error) {
       setRoleError(error instanceof Error ? error.message : 'Failed to save role')
     } finally {
@@ -281,7 +312,15 @@ export default function DashboardUsersRolesPage() {
       const res = await fetch(`/api/roles/${deleteRoleId}`, { method: 'DELETE' })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to delete role')
+        const msg = data.error || 'Failed to delete role'
+        // If users are still assigned, switch to Users tab so they can reassign
+        if (msg.toLowerCase().includes('reassign')) {
+          setDeleteRoleId(null)
+          setActiveTab('users')
+          setPageError('Reassign all users from this role before deleting it. Users tab is now active.')
+          return
+        }
+        throw new Error(msg)
       }
 
       setRoles(current => current.filter(role => role.id !== deleteRoleId))
@@ -453,47 +492,79 @@ export default function DashboardUsersRolesPage() {
                 <div className="h-4 bg-light-gray/60 rounded animate-pulse" />
               </div>
             ))
-          ) : roles.map(role => (
-            <div key={role.id} className="bg-white border border-light-gray rounded-sm p-6 space-y-4" style={{ borderWidth: '0.5px' }}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-serif text-[20px] text-charcoal">{role.name}</h3>
-                    <StatusBadge status={role.isSystem ? 'System' : 'Custom'} variant={role.isSystem ? 'gold' : 'cream'} />
+          ) : roles.map(role => {
+            // Group permission keys by their group label for readable display
+            const groupedPerms = PERMISSIONS_BY_GROUP
+              .map(g => ({
+                group: g.group,
+                labels: g.permissions
+                  .filter(p => role.permissionKeys.includes(p.key))
+                  .map(p => p.label),
+              }))
+              .filter(g => g.labels.length > 0)
+
+            return (
+              <div key={role.id} className="bg-white border border-light-gray rounded-sm p-6 space-y-4" style={{ borderWidth: '0.5px' }}>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-serif text-[20px] text-charcoal">{role.name}</h3>
+                      <StatusBadge status={role.isSystem ? 'System' : 'Custom'} variant={role.isSystem ? 'gold' : 'cream'} />
+                    </div>
+                    <p className="font-sans text-[13px] text-taupe">{role.description || 'No description provided.'}</p>
                   </div>
-                  <p className="font-sans text-[13px] text-taupe">{role.description || 'No description provided.'}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-sans text-[11px] uppercase tracking-wider text-taupe">Users</p>
+                    <p className="font-sans text-[20px] font-medium text-charcoal">{role.usersCount}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-sans text-[11px] uppercase tracking-wider text-taupe">Users</p>
-                  <p className="font-sans text-[20px] font-medium text-charcoal">{role.usersCount}</p>
-                </div>
-              </div>
 
-              <div>
-                <p className="font-sans text-[12px] font-medium uppercase tracking-wider text-taupe mb-2">Permissions</p>
-                <div className="flex flex-wrap gap-2">
-                  {role.permissionKeys.map(permissionKey => (
-                    <span key={permissionKey} className="px-2.5 py-1 bg-light-gray/40 text-charcoal font-sans text-[12px] rounded-sm">
-                      {permissionKey}
-                    </span>
-                  ))}
+                {/* Permissions grouped by category */}
+                {groupedPerms.length > 0 ? (
+                  <div className="space-y-2">
+                    {groupedPerms.map(g => (
+                      <div key={g.group} className="flex items-start gap-2">
+                        <span className="font-sans text-[11px] font-medium uppercase tracking-wider text-taupe w-24 flex-shrink-0 mt-0.5">{g.group}</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {g.labels.map(label => (
+                            <span key={label} className="px-2 py-0.5 bg-light-gray/40 text-charcoal font-sans text-[11px] rounded-sm">
+                              {label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="font-sans text-[12px] text-taupe italic">No permissions assigned.</p>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-light-gray" style={{ borderWidth: '0.5px 0 0 0' }}>
+                  {role.isSystem ? (
+                    <p className="font-sans text-[11px] text-taupe">
+                      System role — cannot be edited. Create a custom role to customise permissions.
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  {!role.isSystem && (
+                    <div className="flex gap-4">
+                      {canEditRoles && (
+                        <button onClick={() => openEditRole(role)} className="font-sans text-[13px] text-charcoal hover:text-taupe bg-transparent border-none cursor-pointer p-0">
+                          Edit
+                        </button>
+                      )}
+                      {canDeleteRoles && (
+                        <button onClick={() => setDeleteRoleId(role.id)} className="font-sans text-[13px] text-error hover:text-error/70 bg-transparent border-none cursor-pointer p-0">
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              <div className="flex justify-end gap-4">
-                {!role.isSystem && canEditRoles && (
-                  <button onClick={() => openEditRole(role)} className="font-sans text-[13px] text-charcoal hover:text-taupe bg-transparent border-none cursor-pointer p-0">
-                    Edit
-                  </button>
-                )}
-                {!role.isSystem && canDeleteRoles && (
-                  <button onClick={() => setDeleteRoleId(role.id)} className="font-sans text-[13px] text-error hover:text-error/70 bg-transparent border-none cursor-pointer p-0">
-                    Delete
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -537,41 +608,87 @@ export default function DashboardUsersRolesPage() {
       {roleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/30 backdrop-blur-sm px-4">
           <div className="bg-white rounded-sm p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-xl border border-light-gray" style={{ borderWidth: '0.5px' }}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-serif text-[20px] text-charcoal m-0">{editingRoleId ? 'Edit role' : 'Create role'}</h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-serif text-[20px] text-charcoal m-0">
+                {editingRoleId ? `Edit role: ${roleForm.name}` : 'Create role'}
+              </h3>
               <button onClick={() => setRoleModalOpen(false)} className="text-[24px] text-taupe hover:text-charcoal bg-transparent border-none cursor-pointer leading-none p-0">&times;</button>
             </div>
-            <div className="space-y-5">
+
+            {/* User impact warning */}
+            {editingRoleId && editingRoleUsersCount > 0 && (
+              <div className="mb-5 px-4 py-3 bg-gold/10 border border-gold/30 rounded-sm" style={{ borderWidth: '0.5px' }}>
+                <p className="font-sans text-[13px] text-charcoal m-0">
+                  ⚠ This role is assigned to <strong>{editingRoleUsersCount} user{editingRoleUsersCount > 1 ? 's' : ''}</strong>. Saving will immediately update their permissions on next login.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-5 mt-4">
               <Field label="Role name">
                 <input value={roleForm.name} onChange={e => setRoleForm(current => ({ ...current, name: e.target.value }))} className="h-[44px] px-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal" style={{ borderWidth: '0.5px' }} />
               </Field>
               <Field label="Description">
-                <textarea value={roleForm.description} onChange={e => setRoleForm(current => ({ ...current, description: e.target.value }))} rows={3} className="p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y" style={{ borderWidth: '0.5px' }} />
+                <textarea value={roleForm.description} onChange={e => setRoleForm(current => ({ ...current, description: e.target.value }))} rows={2} className="p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y" style={{ borderWidth: '0.5px' }} />
               </Field>
 
-              <div className="space-y-4">
-                <p className="font-sans text-[13px] font-medium text-charcoal">Permissions</p>
-                {PERMISSIONS_BY_GROUP.map(group => (
-                  <div key={group.group} className="border border-light-gray rounded-sm p-4" style={{ borderWidth: '0.5px' }}>
-                    <h4 className="font-serif text-[16px] text-charcoal mb-3">{group.group}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {group.permissions.map(permission => (
-                        <label key={permission.key} className="flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            checked={roleForm.permissionKeys.includes(permission.key)}
-                            onChange={() => handlePermissionToggle(permission.key)}
-                            className="mt-1"
-                          />
-                          <div>
-                            <p className="font-sans text-[13px] font-medium text-charcoal">{permission.label}</p>
-                            <p className="font-sans text-[12px] text-taupe">{permission.description}</p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="font-sans text-[13px] font-medium text-charcoal">Permissions</p>
+                  <input
+                    type="text"
+                    placeholder="Search permissions…"
+                    value={permissionSearch}
+                    onChange={e => setPermissionSearch(e.target.value)}
+                    className="h-[34px] px-3 font-sans text-[13px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal w-[200px]"
+                    style={{ borderWidth: '0.5px' }}
+                  />
+                </div>
+                {PERMISSIONS_BY_GROUP
+                  .map(group => ({
+                    ...group,
+                    permissions: group.permissions.filter(p =>
+                      !permissionSearch ||
+                      p.label.toLowerCase().includes(permissionSearch.toLowerCase()) ||
+                      p.key.toLowerCase().includes(permissionSearch.toLowerCase())
+                    ),
+                  }))
+                  .filter(group => group.permissions.length > 0)
+                  .map(group => {
+                    const groupKeys = group.permissions.map(p => p.key)
+                    const allSelected = groupKeys.every(k => roleForm.permissionKeys.includes(k))
+                    const someSelected = groupKeys.some(k => roleForm.permissionKeys.includes(k))
+                    return (
+                      <div key={group.group} className="border border-light-gray rounded-sm p-4" style={{ borderWidth: '0.5px' }}>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-serif text-[15px] text-charcoal">{group.group}</h4>
+                          <button
+                            type="button"
+                            onClick={() => handleGroupToggle(groupKeys)}
+                            className="font-sans text-[11px] font-medium text-charcoal/60 hover:text-charcoal bg-light-gray/30 hover:bg-light-gray/60 px-2.5 py-1 rounded-sm border-none cursor-pointer transition-colors"
+                          >
+                            {allSelected ? 'Deselect all' : someSelected ? 'Select all' : 'Select all'}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {group.permissions.map(permission => (
+                            <label key={permission.key} className="flex items-start gap-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={roleForm.permissionKeys.includes(permission.key)}
+                                onChange={() => handlePermissionToggle(permission.key)}
+                                className="mt-1 flex-shrink-0"
+                              />
+                              <div>
+                                <p className="font-sans text-[13px] font-medium text-charcoal leading-snug">{permission.label}</p>
+                                <p className="font-sans text-[11px] text-taupe leading-snug">{permission.description}</p>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
               </div>
 
               {roleError && <p className="font-sans text-[13px] text-error">{roleError}</p>}

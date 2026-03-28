@@ -20,6 +20,7 @@ export async function PATCH(
       where: { id: numId },
       data: {
         ...(body.status !== undefined && { status: body.status }),
+        ...(body.assignedToId !== undefined && { assignedToId: body.assignedToId ? Number(body.assignedToId) : null }),
       },
     })
     return NextResponse.json(showing)

@@ -10,9 +10,10 @@ export async function GET() {
   try {
     const permissions = auth.session?.user?.permissions ?? []
     const roleName = auth.session?.user?.role ?? 'User'
+    const userName = auth.session?.user?.name ?? ''
     const snapshot = await getCachedDashboardOverviewSnapshot()
 
-    return NextResponse.json(buildDashboardOverviewData(snapshot, permissions, roleName))
+    return NextResponse.json(buildDashboardOverviewData(snapshot, permissions, roleName, userName))
   } catch (error) {
     console.error('GET /api/dashboard-stats error:', error)
     return NextResponse.json({ error: 'Failed to fetch dashboard stats' }, { status: 500 })

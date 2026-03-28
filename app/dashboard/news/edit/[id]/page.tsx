@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import ImageUpload from '@/components/ImageUpload'
+import { RichTextEditor } from '@/components/RichTextEditor'
 import { DashboardAccessDenied } from '@/components/dashboard/DashboardAccessDenied'
 import { hasAnyPermission } from '@/lib/rbac'
 
@@ -182,9 +183,12 @@ export default function DashboardEditNewsArticlePage() {
 
       <div className="bg-white border border-light-gray rounded-sm p-8" style={{borderWidth:'0.5px'}}>
         <h2 className="font-serif text-[16px] text-charcoal mb-6">Article body</h2>
-        <textarea value={body} onChange={e => setBody(e.target.value)} rows={12}
-          className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y min-h-[200px]"
-          style={{borderWidth:'0.5px'}} />
+        <RichTextEditor
+          value={body}
+          onChange={setBody}
+          placeholder="Write your article here…"
+          minHeight={400}
+        />
       </div>
     </div>
   )

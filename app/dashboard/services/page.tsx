@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import ImageUpload from '@/components/ImageUpload'
 import { DashboardAccessDenied } from '@/components/dashboard/DashboardAccessDenied'
@@ -8,13 +8,16 @@ import {
   SERVICES_CTA_DEFAULTS,
   SERVICES_HEADER_DEFAULTS,
   SERVICE_SECTION_DEFAULTS,
+  SERVICES_INDEX_DEFAULT_KEYS,
   parseCtaContent,
   parseServiceSectionContent,
   parseServicesHeaderContent,
+  parseServicesIndexContent,
   toContentMap,
   toCtaEntry,
   toServiceSectionEntry,
   toServicesHeaderEntry,
+  toServicesIndexEntry,
   type CtaContent,
   type ServiceSectionContent,
   type ServicesHeaderContent,
@@ -24,6 +27,18 @@ import { hasAnyPermission } from '@/lib/rbac'
 const inputCls = 'w-full h-[44px] px-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal'
 const textAreaCls = 'w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y'
 
+function makeDefaultService(key: string, index: number): ServiceSectionContent {
+  const fallback = SERVICE_SECTION_DEFAULTS[index % SERVICE_SECTION_DEFAULTS.length]
+  return {
+    key,
+    title: `Service ${index + 1}`,
+    paragraphs: fallback?.paragraphs ?? ['Describe this service here.'],
+    points: fallback?.points ?? ['Key benefit'],
+    image: fallback?.image ?? '',
+    reverse: index % 2 === 1,
+  }
+}
+
 export default function DashboardServicesEditorPage() {
   const { data: session, status } = useSession()
   const [loading, setLoading] = useState(true)
@@ -32,32 +47,35 @@ export default function DashboardServicesEditorPage() {
   const [success, setSuccess] = useState('')
 
   const [header, setHeader] = useState<ServicesHeaderContent>(SERVICES_HEADER_DEFAULTS)
+  const [serviceKeys, setServiceKeys] = useState<string[]>(SERVICES_INDEX_DEFAULT_KEYS)
   const [services, setServices] = useState<ServiceSectionContent[]>(SERVICE_SECTION_DEFAULTS)
   const [cta, setCta] = useState<CtaContent>(SERVICES_CTA_DEFAULTS)
+
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
-    if (status !== 'authenticated' || !canEdit) {
-      return
-    }
+    if (status !== 'authenticated' || !canEdit) return
 
     async function load() {
       try {
         const res = await fetch('/api/site-content')
-        if (!res.ok) {
-          throw new Error('Failed to load services content.')
-        }
+        if (!res.ok) throw new Error('Failed to load services content.')
 
         const items = await res.json()
         const contentMap = toContentMap(items)
 
         setHeader(parseServicesHeaderContent(contentMap.get('services_header')))
-        setServices(
-          SERVICE_SECTION_DEFAULTS.map((defaults) =>
-            parseServiceSectionContent(contentMap.get(defaults.key), defaults)
-          )
-        )
         setCta(parseCtaContent(contentMap.get('services_cta'), SERVICES_CTA_DEFAULTS))
+
+        const { keys } = parseServicesIndexContent(contentMap.get('services_index'))
+        setServiceKeys(keys)
+
+        setServices(
+          keys.map((key, index) => {
+            const fallback = makeDefaultService(key, index)
+            return parseServiceSectionContent(contentMap.get(key), fallback)
+          })
+        )
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load services content.')
       } finally {
@@ -68,13 +86,9 @@ export default function DashboardServicesEditorPage() {
     void load()
   }, [canEdit, status])
 
-  if (status === 'loading') {
-    return <EditorState message="Loading services editor…" />
-  }
-
-  if (!canEdit) {
-    return <DashboardAccessDenied message="You do not have permission to edit website pages." />
-  }
+  if (status === 'loading') return <EditorState message="Loading services editor…" />
+  if (!canEdit) return <DashboardAccessDenied message="You do not have permission to edit website pages." />
+  if (loading) return <EditorState message="Loading services editor…" />
 
   const handleSave = async () => {
     setSaving(true)
@@ -87,6 +101,7 @@ export default function DashboardServicesEditorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
           toServicesHeaderEntry(header),
+          toServicesIndexEntry({ keys: serviceKeys }),
           ...services.map((service) => toServiceSectionEntry(service)),
           toCtaEntry('services_cta', cta),
         ]),
@@ -105,9 +120,49 @@ export default function DashboardServicesEditorPage() {
     }
   }
 
-  if (loading) {
-    return <EditorState message="Loading services editor…" />
+  const addService = () => {
+    const nextNum = serviceKeys.length + 1
+    let newKey = `service_${nextNum}`
+    while (serviceKeys.includes(newKey)) {
+      newKey = `service_${Date.now()}`
+    }
+    const newService = makeDefaultService(newKey, serviceKeys.length)
+    setServiceKeys(current => [...current, newKey])
+    setServices(current => [...current, newService])
   }
+
+  const deleteService = async (index: number) => {
+    const key = serviceKeys[index]
+    setServiceKeys(current => current.filter((_, i) => i !== index))
+    setServices(current => current.filter((_, i) => i !== index))
+    // Best-effort delete from DB
+    try {
+      await fetch(`/api/site-content?key=${encodeURIComponent(key)}`, { method: 'DELETE' })
+    } catch {
+      // Row may not exist yet — ignore
+    }
+  }
+
+  const moveService = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= serviceKeys.length) return
+    setServiceKeys(current => {
+      const arr = [...current]
+      ;[arr[index], arr[newIndex]] = [arr[newIndex], arr[index]]
+      return arr
+    })
+    setServices(current => {
+      const arr = [...current]
+      ;[arr[index], arr[newIndex]] = [arr[newIndex], arr[index]]
+      return arr
+    })
+  }
+
+  const updateService = useCallback((index: number, patch: Partial<ServiceSectionContent>) => {
+    setServices(current =>
+      current.map((service, i) => i === index ? { ...service, ...patch } : service)
+    )
+  }, [])
 
   return (
     <div className="max-w-6xl mx-auto pb-24 space-y-8">
@@ -124,13 +179,14 @@ export default function DashboardServicesEditorPage() {
       {error && <Message tone="error" text={error} />}
       {success && <Message tone="success" text={success} />}
 
+      {/* Page header section */}
       <Section title="Services page header">
         <div className="space-y-4">
           <Field label="Headline">
             <input
               type="text"
               value={header.title}
-              onChange={(event) => setHeader((current) => ({ ...current, title: event.target.value }))}
+              onChange={(e) => setHeader(current => ({ ...current, title: e.target.value }))}
               className={inputCls}
               style={{ borderWidth: '0.5px' }}
             />
@@ -139,7 +195,7 @@ export default function DashboardServicesEditorPage() {
             <textarea
               rows={3}
               value={header.subtitle}
-              onChange={(event) => setHeader((current) => ({ ...current, subtitle: event.target.value }))}
+              onChange={(e) => setHeader(current => ({ ...current, subtitle: e.target.value }))}
               className={textAreaCls}
               style={{ borderWidth: '0.5px' }}
             />
@@ -147,14 +203,42 @@ export default function DashboardServicesEditorPage() {
         </div>
       </Section>
 
+      {/* Dynamic service sections */}
       {services.map((service, index) => (
-        <Section key={service.key} title={`Service ${index + 1}`}>
+        <Section
+          key={service.key}
+          title={`Service ${index + 1}`}
+          controls={
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => moveService(index, 'up')}
+                disabled={index === 0}
+                className="w-8 h-8 flex items-center justify-center rounded-sm bg-light-gray/40 hover:bg-light-gray text-charcoal border-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-[16px]"
+                title="Move up"
+              >↑</button>
+              <button
+                onClick={() => moveService(index, 'down')}
+                disabled={index === services.length - 1}
+                className="w-8 h-8 flex items-center justify-center rounded-sm bg-light-gray/40 hover:bg-light-gray text-charcoal border-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-[16px]"
+                title="Move down"
+              >↓</button>
+              <button
+                onClick={() => deleteService(index)}
+                disabled={services.length <= 1}
+                className="px-3 py-1.5 rounded-sm font-sans text-[12px] font-medium text-error bg-error/5 hover:bg-error/10 border border-error/20 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                style={{ borderWidth: '0.5px' }}
+              >
+                Delete
+              </button>
+            </div>
+          }
+        >
           <div className="space-y-5">
             <Field label="Title">
               <input
                 type="text"
                 value={service.title}
-                onChange={(event) => updateService(index, { title: event.target.value })}
+                onChange={(e) => updateService(index, { title: e.target.value })}
                 className={inputCls}
                 style={{ borderWidth: '0.5px' }}
               />
@@ -183,13 +267,26 @@ export default function DashboardServicesEditorPage() {
         </Section>
       ))}
 
+      {/* Add service */}
+      <div className="flex justify-center">
+        <button
+          onClick={addService}
+          className="flex items-center gap-2 px-6 py-3 rounded-full font-sans text-[13px] font-medium text-charcoal bg-white border border-charcoal hover:bg-light-gray/20 transition-colors cursor-pointer"
+          style={{ borderWidth: '0.5px' }}
+        >
+          <span className="text-[18px] leading-none">+</span>
+          Add service
+        </button>
+      </div>
+
+      {/* Final CTA */}
       <Section title="Final CTA">
         <div className="space-y-4">
           <Field label="Headline">
             <input
               type="text"
               value={cta.title}
-              onChange={(event) => setCta((current) => ({ ...current, title: event.target.value }))}
+              onChange={(e) => setCta(current => ({ ...current, title: e.target.value }))}
               className={inputCls}
               style={{ borderWidth: '0.5px' }}
             />
@@ -198,7 +295,7 @@ export default function DashboardServicesEditorPage() {
             <textarea
               rows={3}
               value={cta.subtitle}
-              onChange={(event) => setCta((current) => ({ ...current, subtitle: event.target.value }))}
+              onChange={(e) => setCta(current => ({ ...current, subtitle: e.target.value }))}
               className={textAreaCls}
               style={{ borderWidth: '0.5px' }}
             />
@@ -208,7 +305,7 @@ export default function DashboardServicesEditorPage() {
               <input
                 type="text"
                 value={cta.linkText}
-                onChange={(event) => setCta((current) => ({ ...current, linkText: event.target.value }))}
+                onChange={(e) => setCta(current => ({ ...current, linkText: e.target.value }))}
                 className={inputCls}
                 style={{ borderWidth: '0.5px' }}
               />
@@ -217,7 +314,7 @@ export default function DashboardServicesEditorPage() {
               <input
                 type="text"
                 value={cta.linkUrl}
-                onChange={(event) => setCta((current) => ({ ...current, linkUrl: event.target.value }))}
+                onChange={(e) => setCta(current => ({ ...current, linkUrl: e.target.value }))}
                 className={inputCls}
                 style={{ borderWidth: '0.5px' }}
               />
@@ -227,20 +324,23 @@ export default function DashboardServicesEditorPage() {
       </Section>
     </div>
   )
-
-  function updateService(index: number, patch: Partial<ServiceSectionContent>) {
-    setServices((current) =>
-      current.map((service, serviceIndex) =>
-        serviceIndex === index ? { ...service, ...patch } : service
-      )
-    )
-  }
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  controls,
+}: {
+  title: string
+  children: React.ReactNode
+  controls?: React.ReactNode
+}) {
   return (
     <div className="bg-white border border-light-gray rounded-sm p-8" style={{ borderWidth: '0.5px' }}>
-      <h2 className="font-serif text-[20px] text-charcoal mb-6">{title}</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-serif text-[20px] text-charcoal">{title}</h2>
+        {controls && <div>{controls}</div>}
+      </div>
       {children}
     </div>
   )
@@ -292,13 +392,13 @@ function StringListEditor({
     <div className="space-y-3">
       <label className="font-sans text-[13px] font-medium text-charcoal">{label}</label>
       {items.map((item, index) => (
-        <div key={`${label}-${index}`} className="space-y-2">
+        <div key={`${label}-${index}`}>
           <div className="flex gap-2">
             {multiline ? (
               <textarea
                 rows={4}
                 value={item}
-                onChange={(event) => onChange(items.map((current, currentIndex) => (currentIndex === index ? event.target.value : current)))}
+                onChange={(e) => onChange(items.map((cur, i) => i === index ? e.target.value : cur))}
                 className="flex-1 p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
                 style={{ borderWidth: '0.5px' }}
               />
@@ -306,14 +406,14 @@ function StringListEditor({
               <input
                 type="text"
                 value={item}
-                onChange={(event) => onChange(items.map((current, currentIndex) => (currentIndex === index ? event.target.value : current)))}
+                onChange={(e) => onChange(items.map((cur, i) => i === index ? e.target.value : cur))}
                 className="flex-1 h-[40px] px-3 font-sans text-[13px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal"
                 style={{ borderWidth: '0.5px' }}
               />
             )}
             <button
               type="button"
-              onClick={() => onChange(items.filter((_, currentIndex) => currentIndex !== index))}
+              onClick={() => onChange(items.filter((_, i) => i !== index))}
               disabled={items.length === 1}
               className="w-[40px] h-[40px] text-[18px] text-taupe hover:text-error bg-light-gray/20 border-none rounded-sm cursor-pointer disabled:opacity-40"
             >
@@ -338,7 +438,9 @@ function Message({ tone, text }: { tone: 'error' | 'success'; text: string }) {
   return (
     <div
       className={`px-4 py-3 rounded-sm font-sans text-[13px] ${
-        tone === 'error' ? 'bg-error/5 text-error border border-error/20' : 'bg-success/10 text-success border border-success/20'
+        tone === 'error'
+          ? 'bg-error/5 text-error border border-error/20'
+          : 'bg-success/10 text-success border border-success/20'
       }`}
       style={{ borderWidth: '0.5px' }}
     >

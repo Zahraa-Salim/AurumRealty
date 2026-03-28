@@ -20,6 +20,23 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  const auth = await requireApiPermissions(['settings.edit', 'pages.edit'])
+  if (auth.response) return auth.response
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const key = searchParams.get('key')
+    if (!key) {
+      return NextResponse.json({ error: 'key query parameter is required' }, { status: 400 })
+    }
+    await prisma.siteContent.delete({ where: { key } })
+    return NextResponse.json({ deleted: key })
+  } catch {
+    return NextResponse.json({ error: 'Failed to delete site content' }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
   const auth = await requireApiPermissions(['settings.edit', 'pages.edit'])
   if (auth.response) return auth.response

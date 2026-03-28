@@ -121,12 +121,16 @@ export type SeoDefaultsContent = {
 }
 
 export type ServiceSectionContent = {
-  key: 'service_1' | 'service_2' | 'service_3'
+  key: string
   title: string
   paragraphs: string[]
   points: string[]
   image: string
   reverse?: boolean
+}
+
+export type ServicesIndexContent = {
+  keys: string[]
 }
 
 export type ServicesHeaderContent = {
@@ -713,5 +717,23 @@ export function toServiceSectionEntry(content: ServiceSectionContent): SiteConte
       paragraphs: cleanParagraphs(content.paragraphs),
       points: cleanParagraphs(content.points),
     }),
+  }
+}
+
+export const SERVICES_INDEX_DEFAULT_KEYS = ['service_1', 'service_2', 'service_3']
+
+export function parseServicesIndexContent(content: SiteContentRecord): ServicesIndexContent {
+  const parsed = safeParseJson<{ keys?: string[] }>(content?.body)
+  return {
+    keys: Array.isArray(parsed?.keys) && parsed.keys.length > 0
+      ? parsed.keys.filter((k): k is string => typeof k === 'string')
+      : SERVICES_INDEX_DEFAULT_KEYS,
+  }
+}
+
+export function toServicesIndexEntry(content: ServicesIndexContent): SiteContentEntryInput {
+  return {
+    key: 'services_index',
+    body: JSON.stringify({ keys: content.keys }),
   }
 }

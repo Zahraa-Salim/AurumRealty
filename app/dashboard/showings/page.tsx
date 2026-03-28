@@ -18,6 +18,7 @@ type Showing = {
   message: string
   status: string
   createdAt: string
+  assignedTo: { id: number; name: string } | null
 }
 
 type Tab = 'showings' | 'enquiries'
@@ -53,13 +54,15 @@ export default function DashboardShowingsPage() {
   const [updating,   setUpdating]   = useState(false)
   const [deleting,   setDeleting]   = useState(false)
 
-  const canView = hasAnyPermission(session?.user?.permissions ?? [], ['submissions.view'])
+  const permissions = session?.user?.permissions ?? []
+  const canView    = hasAnyPermission(permissions, ['submissions.view', 'submissions.view.own'])
+  const ownOnly    = !hasAnyPermission(permissions, ['submissions.view']) &&
+                     hasAnyPermission(permissions, ['submissions.view.own'])
+  const canUpdate  = hasAnyPermission(permissions, ['submissions.update'])
+  const canDelete  = hasAnyPermission(permissions, ['submissions.delete'])
 
   useEffect(() => {
-    if (status !== 'authenticated' || !canView) {
-      return
-    }
-
+    if (status !== 'authenticated' || !canView) return
     fetch('/api/showings')
       .then(r => r.json())
       .then(d => { setAll(d); setLoading(false) })
@@ -72,13 +75,13 @@ export default function DashboardShowingsPage() {
   const active    = all.find(s => s.id === selectedId)
   const newCount  = (arr: Showing[]) => arr.filter(s => s.status === 'New').length
 
-  const updateStatus = async (id: number, status: string) => {
+  const updateStatus = async (id: number, newStatus: string) => {
     setUpdating(true)
     try {
       const res = await fetch(`/api/showings/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
         const updated = await res.json()
@@ -115,6 +118,13 @@ export default function DashboardShowingsPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5 relative">
 
+      {/* Scoped-user banner */}
+      {ownOnly && (
+        <div className="px-4 py-3 bg-gold/10 border border-gold/30 rounded-sm font-sans text-[13px] text-charcoal" style={{ borderWidth: '0.5px' }}>
+          Showing submissions assigned to you. Contact a Super Admin to access all submissions.
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex border-b border-light-gray" style={{ borderWidth: '0 0 0.5px 0' }}>
         {(['showings', 'enquiries'] as Tab[]).map(key => {
@@ -131,11 +141,6 @@ export default function DashboardShowingsPage() {
             </button>
           )
         })}
-        <div className="ml-auto flex items-center pb-1">
-          <button className="px-5 py-2 rounded-full font-sans text-[13px] font-medium text-charcoal bg-transparent border border-charcoal hover:bg-light-gray/20 transition-colors" style={{ borderWidth: '0.5px' }}>
-            Export CSV
-          </button>
-        </div>
       </div>
 
       {/* Table */}
@@ -147,6 +152,7 @@ export default function DashboardShowingsPage() {
               <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Property</th>
               {tab === 'showings' && <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Requested date</th>}
               <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Message</th>
+              <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Assigned to</th>
               <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Submitted</th>
               <th className="p-4 font-sans text-[12px] font-medium uppercase tracking-wider text-taupe">Status</th>
             </tr>
@@ -155,18 +161,18 @@ export default function DashboardShowingsPage() {
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i} className="border-b border-light-gray" style={{ borderWidth: '0 0 0.5px 0' }}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <td key={j} className="p-4"><div className="h-4 bg-light-gray/60 rounded animate-pulse" /></td>
                   ))}
                 </tr>
               ))
             ) : error ? (
-              <tr><td colSpan={6} className="p-16 text-center">
+              <tr><td colSpan={7} className="p-16 text-center">
                 <p className="font-serif text-[20px] text-charcoal mb-2">Failed to load submissions</p>
                 <p className="font-sans text-[14px] text-taupe">Check your database connection and try again.</p>
               </td></tr>
             ) : data.length === 0 ? (
-              <tr><td colSpan={6} className="p-16 text-center">
+              <tr><td colSpan={7} className="p-16 text-center">
                 <p className="font-serif text-[20px] text-charcoal mb-2">No {tab === 'showings' ? 'showing requests' : 'agent enquiries'} yet</p>
                 <p className="font-sans text-[14px] text-taupe">Submissions from property pages will appear here.</p>
               </td></tr>
@@ -185,6 +191,13 @@ export default function DashboardShowingsPage() {
                   </td>
                 )}
                 <td className="p-4 font-sans text-[14px] text-taupe max-w-[280px] truncate">{s.message}</td>
+                <td className="p-4 font-sans text-[13px] text-taupe">
+                  {s.assignedTo ? (
+                    <span className="px-2 py-0.5 bg-charcoal/8 text-charcoal rounded-sm text-[12px]">{s.assignedTo.name}</span>
+                  ) : (
+                    <span className="text-light-gray/80 italic text-[12px]">Unassigned</span>
+                  )}
+                </td>
                 <td className="p-4 font-sans text-[14px] text-taupe whitespace-nowrap">{fmtDate(s.createdAt)}</td>
                 <td className="p-4"><StatusBadge status={s.status} variant={statusVariant(s.status)} /></td>
               </tr>
@@ -224,22 +237,30 @@ export default function DashboardShowingsPage() {
                 </div>
               )}
               <div>
+                <p className="font-sans text-[11px] font-medium text-taupe uppercase tracking-wider mb-1">Assigned to</p>
+                <p className="font-sans text-[13px] text-charcoal">{active.assignedTo?.name ?? 'Unassigned'}</p>
+              </div>
+              <div>
                 <p className="font-sans text-[11px] font-medium text-taupe uppercase tracking-wider mb-1">Message</p>
                 <p className="font-sans text-[13px] text-charcoal leading-[1.6]">{active.message}</p>
               </div>
             </div>
-            <div className="p-5 border-t border-light-gray space-y-2.5 bg-light-gray/5 flex-shrink-0" style={{ borderWidth: '0.5px 0 0 0' }}>
-              {nextStatuses(active.status, active.type).map(s => (
-                <button key={s} disabled={updating} onClick={() => updateStatus(active.id, s)}
-                  className="w-full px-4 py-2.5 rounded-full font-sans text-[13px] font-medium text-charcoal bg-gold hover:bg-gold-dark disabled:opacity-60 transition-colors cursor-pointer border-none">
-                  {updating ? 'Updating…' : `Mark as ${s}`}
-                </button>
-              ))}
-              <button onClick={() => { setDeleteId(active.id); setSelectedId(null) }}
-                className="w-full px-4 py-2.5 rounded-full font-sans text-[13px] font-medium text-error bg-transparent border-none hover:bg-error/5 transition-colors cursor-pointer">
-                Delete
-              </button>
-            </div>
+            {canUpdate && (
+              <div className="p-5 border-t border-light-gray space-y-2.5 bg-light-gray/5 flex-shrink-0" style={{ borderWidth: '0.5px 0 0 0' }}>
+                {nextStatuses(active.status, active.type).map(s => (
+                  <button key={s} disabled={updating} onClick={() => updateStatus(active.id, s)}
+                    className="w-full px-4 py-2.5 rounded-full font-sans text-[13px] font-medium text-charcoal bg-gold hover:bg-gold-dark disabled:opacity-60 transition-colors cursor-pointer border-none">
+                    {updating ? 'Updating…' : `Mark as ${s}`}
+                  </button>
+                ))}
+                {canDelete && (
+                  <button onClick={() => { setDeleteId(active.id); setSelectedId(null) }}
+                    className="w-full px-4 py-2.5 rounded-full font-sans text-[13px] font-medium text-error bg-transparent border-none hover:bg-error/5 transition-colors cursor-pointer">
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}

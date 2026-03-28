@@ -1,18 +1,15 @@
 /**
  * RootLayout — app/layout.tsx
  *
- * Top-level HTML shell for every route (public, dashboard, login).
- * Favicon declared here via metadata.icons so it applies universally.
- * Uses both .ico (broad browser support) and .svg (modern browsers).
- *
- * Navigation/Footer → app/(public)/layout.tsx
- * Dashboard shell  → app/dashboard/layout.tsx
- * Auth pages       → app/(auth)/layout.tsx
+ * Reads the `locale` cookie server-side to set dir and lang on <html>.
+ * This ensures Arabic pages are RTL without a client round-trip.
  */
 
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import './styles/globals.css'
 import { AuthSessionProvider } from '@/components/AuthSessionProvider'
+import { getLocaleFromCookieHeader, getDir } from '@/lib/i18n'
 
 export const metadata: Metadata = {
   title: {
@@ -30,9 +27,15 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read locale from cookie — this runs server-side on every request
+  const cookieStore = await cookies()
+  const localeCookie = cookieStore.get('locale')?.value ?? null
+  const locale = localeCookie === 'ar' ? 'ar' : 'en'
+  const dir = getDir(locale)
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={dir}>
       <body>
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>

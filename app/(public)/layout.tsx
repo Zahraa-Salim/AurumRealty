@@ -15,7 +15,8 @@
 
 import { Navigation } from '@/components/Navigation'
 import { Footer } from '@/components/Footer'
-import { getServerLocale, getDir, type Locale } from '@/lib/i18n'
+import { getServerLocale } from '@/lib/locale-server'
+import { getDir, type Locale } from '@/lib/i18n'
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const locale = (await getServerLocale()) as Locale

@@ -55,6 +55,10 @@ export default function DashboardHomeEditorPage() {
   const [about, setAbout] = useState<HomeAboutContent>(HOME_ABOUT_DEFAULTS)
   const [journal, setJournal] = useState<HomeJournalContent>(HOME_JOURNAL_DEFAULTS)
   const [cta, setCta] = useState<HomeCtaContent>(HOME_CTA_DEFAULTS)
+  const [heroAr, setHeroAr] = useState({ title: '', subtitle: '', linkText: '' })
+  const [servicesAr, setServicesAr] = useState({ title: '', subtitle: '' })
+  const [aboutAr, setAboutAr] = useState({ title: '', subtitle: '', body: '' })
+  const [ctaAr, setCtaAr] = useState({ title: '', subtitle: '', linkText: '' })
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
@@ -79,12 +83,37 @@ export default function DashboardHomeEditorPage() {
         ])
 
         const contentMap = toContentMap(contentItems)
-        setHero(parseHomeHeroContent(contentMap.get('home_hero')))
+        const heroContent = parseHomeHeroContent(contentMap.get('home_hero'))
+        const servicesContent = parseHomeServicesContent(contentMap.get('home_services'))
+        const aboutContent = parseHomeAboutContent(contentMap.get('home_about'))
+        const ctaContent = parseHomeCtaContent(contentMap.get('home_cta'))
+
+        setHero(heroContent)
         setFeaturedPropertyIds(parseHomeFeaturedPropertiesContent(contentMap.get('home_featured_properties')).propertyIds)
-        setServices(parseHomeServicesContent(contentMap.get('home_services')))
-        setAbout(parseHomeAboutContent(contentMap.get('home_about')))
+        setServices(servicesContent)
+        setAbout(aboutContent)
         setJournal(parseHomeJournalContent(contentMap.get('home_journal')))
-        setCta(parseHomeCtaContent(contentMap.get('home_cta')))
+        setCta(ctaContent)
+
+        setHeroAr({
+          title: (heroContent as any).titleAr ?? '',
+          subtitle: (heroContent as any).subtitleAr ?? '',
+          linkText: (heroContent as any).linkTextAr ?? ''
+        })
+        setServicesAr({
+          title: (servicesContent as any).titleAr ?? '',
+          subtitle: (servicesContent as any).subtitleAr ?? ''
+        })
+        setAboutAr({
+          title: (aboutContent as any).titleAr ?? '',
+          subtitle: (aboutContent as any).subtitleAr ?? '',
+          body: (aboutContent as any).bodyAr ?? ''
+        })
+        setCtaAr({
+          title: (ctaContent as any).titleAr ?? '',
+          subtitle: (ctaContent as any).subtitleAr ?? '',
+          linkText: (ctaContent as any).linkTextAr ?? ''
+        })
         setProperties(Array.isArray(propertyItems) ? propertyItems : [])
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load homepage content.')
@@ -119,12 +148,12 @@ export default function DashboardHomeEditorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
-          toHomeHeroEntry(hero),
+          { ...toHomeHeroEntry(hero), titleAr: heroAr.title || null, subtitleAr: heroAr.subtitle || null, linkTextAr: heroAr.linkText || null },
           toHomeFeaturedPropertiesEntry({ propertyIds: featuredPropertyIds }),
-          toHomeServicesEntry(services),
-          toHomeAboutEntry(about),
+          { ...toHomeServicesEntry(services), titleAr: servicesAr.title || null, subtitleAr: servicesAr.subtitle || null },
+          { ...toHomeAboutEntry(about), titleAr: aboutAr.title || null, subtitleAr: aboutAr.subtitle || null, bodyAr: aboutAr.body || null },
           toHomeJournalEntry(journal),
-          toHomeCtaEntry(cta),
+          { ...toHomeCtaEntry(cta), titleAr: ctaAr.title || null, subtitleAr: ctaAr.subtitle || null, linkTextAr: ctaAr.linkText || null },
         ]),
       })
 
@@ -219,6 +248,44 @@ export default function DashboardHomeEditorPage() {
         </div>
       </Section>
 
+      <Section title="Hero section - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={heroAr.title}
+              onChange={(event) => setHeroAr((current) => ({ ...current, title: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={heroAr.subtitle}
+              onChange={(event) => setHeroAr((current) => ({ ...current, subtitle: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="CTA button label (AR)">
+            <input
+              type="text"
+              value={heroAr.linkText}
+              onChange={(event) => setHeroAr((current) => ({ ...current, linkText: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+        </div>
+      </Section>
+
       <Section title="Featured properties">
         <p className="font-sans text-[13px] text-taupe mb-4">Choose up to 3 featured properties for the homepage.</p>
         <div className="border border-light-gray rounded-sm overflow-hidden max-h-[280px] overflow-y-auto" style={{ borderWidth: '0.5px' }}>
@@ -267,6 +334,33 @@ export default function DashboardHomeEditorPage() {
         </div>
       </Section>
 
+      <Section title="Services section - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={servicesAr.title}
+              onChange={(event) => setServicesAr((current) => ({ ...current, title: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={servicesAr.subtitle}
+              onChange={(event) => setServicesAr((current) => ({ ...current, subtitle: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+        </div>
+      </Section>
+
       <Section title="About brief on homepage">
         <div className="space-y-5">
           <Field label="Headline">
@@ -312,6 +406,44 @@ export default function DashboardHomeEditorPage() {
               />
             </Field>
           </div>
+        </div>
+      </Section>
+
+      <Section title="About brief - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={aboutAr.title}
+              onChange={(event) => setAboutAr((current) => ({ ...current, title: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={aboutAr.subtitle}
+              onChange={(event) => setAboutAr((current) => ({ ...current, subtitle: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Body (AR)">
+            <textarea
+              rows={4}
+              value={aboutAr.body}
+              onChange={(event) => setAboutAr((current) => ({ ...current, body: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
         </div>
       </Section>
 
@@ -378,6 +510,44 @@ export default function DashboardHomeEditorPage() {
               />
             </Field>
           </div>
+        </div>
+      </Section>
+
+      <Section title="Bottom CTA - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={ctaAr.title}
+              onChange={(event) => setCtaAr((current) => ({ ...current, title: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={ctaAr.subtitle}
+              onChange={(event) => setCtaAr((current) => ({ ...current, subtitle: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Button label (AR)">
+            <input
+              type="text"
+              value={ctaAr.linkText}
+              onChange={(event) => setCtaAr((current) => ({ ...current, linkText: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
         </div>
       </Section>
     </div>

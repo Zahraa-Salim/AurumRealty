@@ -61,6 +61,9 @@ export async function PATCH(
         ...(body.summary !== undefined && { summary: body.summary }),
         ...(body.body !== undefined && { body: body.body }),
         ...(body.heroImage !== undefined && { heroImage: body.heroImage }),
+        ...(body.titleAr !== undefined && { titleAr: body.titleAr }),
+        ...(body.summaryAr !== undefined && { summaryAr: body.summaryAr }),
+        ...(body.bodyAr !== undefined && { bodyAr: body.bodyAr }),
         ...(body.isPublished !== undefined && { isPublished: body.isPublished }),
         ...(body.publishedAt !== undefined && {
           publishedAt: body.publishedAt ? new Date(body.publishedAt) : null,

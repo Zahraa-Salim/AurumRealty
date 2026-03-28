@@ -33,6 +33,10 @@ export default function DashboardEditBlogPostPage() {
   const [readTime,    setReadTime]    = useState('')
   const [publishDate, setPublishDate] = useState('')
   const [isPublished, setIsPublished] = useState(false)
+  const [titleAr,     setTitleAr]     = useState('')
+  const [subtitleAr,  setSubtitleAr]  = useState('')
+  const [bodyAr,      setBodyAr]      = useState('')
+  const [pullQuoteAr, setPullQuoteAr] = useState('')
   const [saveState,   setSaveState]   = useState<SaveState>('idle')
   const [errorMsg,    setErrorMsg]    = useState('')
 
@@ -49,6 +53,8 @@ export default function DashboardEditBlogPostPage() {
         setPullQuote(d.pullQuote ?? ''); setHeroImage(d.heroImage ?? '')
         setReadTime(d.readTime ?? ''); setIsPublished(d.isPublished ?? false)
         setPublishDate(d.publishedAt ? d.publishedAt.split('T')[0] : '')
+        setTitleAr(d.titleAr ?? ''); setSubtitleAr(d.subtitleAr ?? '')
+        setBodyAr(d.bodyAr ?? ''); setPullQuoteAr(d.pullQuoteAr ?? '')
         setLoading(false)
       })
       .catch(() => { setNotFound(true); setLoading(false) })
@@ -77,6 +83,10 @@ export default function DashboardEditBlogPostPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title, slug, topic, author, subtitle, body, pullQuote,
+          titleAr:     titleAr     || null,
+          subtitleAr:  subtitleAr  || null,
+          bodyAr:      bodyAr      || null,
+          pullQuoteAr: pullQuoteAr || null,
           heroImage:   heroImage  || null,
           readTime:    readTime   || null,
           isPublished,
@@ -204,6 +214,38 @@ export default function DashboardEditBlogPostPage() {
               <textarea value={pullQuote} onChange={e => setPullQuote(e.target.value)} rows={3}
                 className="w-full p-4 pl-6 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y min-h-[80px]"
                 style={{borderWidth:'0.5px'}} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-light-gray rounded-sm p-8" style={{borderWidth:'0.5px'}}>
+        <h2 className="font-serif text-[16px] text-charcoal mb-6">Arabic Translation <span className="font-normal text-taupe">(optional)</span></h2>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Title (AR)</label>
+            <input type="text" value={titleAr} onChange={e => setTitleAr(e.target.value)} dir="rtl" lang="ar" className={`w-full ${ic}`} style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Subtitle (AR)</label>
+            <input type="text" value={subtitleAr} onChange={e => setSubtitleAr(e.target.value)} dir="rtl" lang="ar" className={`w-full ${ic}`} style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Body (AR)</label>
+            <RichTextEditor
+              value={bodyAr}
+              onChange={setBodyAr}
+              placeholder="اكتب مقالتك هنا…"
+              minHeight={400}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Pull quote (AR)</label>
+            <div className="relative">
+              <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-gold rounded-l-sm" />
+              <textarea value={pullQuoteAr} onChange={e => setPullQuoteAr(e.target.value)} rows={3} dir="rtl" lang="ar"
+                className="w-full p-4 pl-6 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y min-h-[80px]"
+                style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
             </div>
           </div>
         </div>

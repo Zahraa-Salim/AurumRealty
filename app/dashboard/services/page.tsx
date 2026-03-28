@@ -51,6 +51,10 @@ export default function DashboardServicesEditorPage() {
   const [services, setServices] = useState<ServiceSectionContent[]>(SERVICE_SECTION_DEFAULTS)
   const [cta, setCta] = useState<CtaContent>(SERVICES_CTA_DEFAULTS)
 
+  const [headerAr, setHeaderAr] = useState({ titleAr: '', subtitleAr: '' })
+  const [ctaAr, setCtaAr] = useState({ titleAr: '', subtitleAr: '', linkText: '' })
+  const [servicesAr, setServicesAr] = useState<Record<string, { titleAr: string; paragraphsAr: string[] }>>({})
+
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
@@ -64,18 +68,46 @@ export default function DashboardServicesEditorPage() {
         const items = await res.json()
         const contentMap = toContentMap(items)
 
-        setHeader(parseServicesHeaderContent(contentMap.get('services_header')))
-        setCta(parseCtaContent(contentMap.get('services_cta'), SERVICES_CTA_DEFAULTS))
+        const headerContent = parseServicesHeaderContent(contentMap.get('services_header'))
+        const ctaContent = parseCtaContent(contentMap.get('services_cta'), SERVICES_CTA_DEFAULTS)
+
+        setHeader(headerContent)
+        setCta(ctaContent)
+
+        setHeaderAr({
+          titleAr: (headerContent as any).titleAr ?? '',
+          subtitleAr: (headerContent as any).subtitleAr ?? ''
+        })
+
+        setCtaAr({
+          titleAr: (ctaContent as any).titleAr ?? '',
+          subtitleAr: (ctaContent as any).subtitleAr ?? '',
+          linkText: (ctaContent as any).linkTextAr ?? ''
+        })
 
         const { keys } = parseServicesIndexContent(contentMap.get('services_index'))
         setServiceKeys(keys)
 
-        setServices(
-          keys.map((key, index) => {
-            const fallback = makeDefaultService(key, index)
-            return parseServiceSectionContent(contentMap.get(key), fallback)
-          })
-        )
+        const loadedServices = keys.map((key, index) => {
+          const fallback = makeDefaultService(key, index)
+          return parseServiceSectionContent(contentMap.get(key), fallback)
+        })
+        setServices(loadedServices)
+
+        // Load Arabic translations for services
+        const arMap: Record<string, { titleAr: string; paragraphsAr: string[] }> = {}
+        keys.forEach((key) => {
+          const content = contentMap.get(key)
+          if (content) {
+            arMap[key] = {
+              titleAr: (content as any).titleAr ?? '',
+              paragraphsAr: (content as any).paragraphsAr ?
+                ((content as any).paragraphsAr as string[]) :
+                []
+            }
+          }
+        })
+        setServicesAr(arMap)
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load services content.')
       } finally {
@@ -100,10 +132,17 @@ export default function DashboardServicesEditorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
-          toServicesHeaderEntry(header),
+          { ...toServicesHeaderEntry(header), titleAr: headerAr.titleAr || null, subtitleAr: headerAr.subtitleAr || null },
           toServicesIndexEntry({ keys: serviceKeys }),
-          ...services.map((service) => toServiceSectionEntry(service)),
-          toCtaEntry('services_cta', cta),
+          ...services.map((service) => {
+            const ar = servicesAr[service.key] || { titleAr: '', paragraphsAr: [] }
+            return {
+              ...toServiceSectionEntry(service),
+              titleAr: ar.titleAr || null,
+              paragraphsAr: ar.paragraphsAr.length > 0 ? ar.paragraphsAr : null,
+            }
+          }),
+          { ...toCtaEntry('services_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkText || null },
         ]),
       })
 
@@ -203,6 +242,33 @@ export default function DashboardServicesEditorPage() {
         </div>
       </Section>
 
+      <Section title="Services page header - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={headerAr.titleAr}
+              onChange={(e) => setHeaderAr(current => ({ ...current, titleAr: e.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={headerAr.subtitleAr}
+              onChange={(e) => setHeaderAr(current => ({ ...current, subtitleAr: e.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+        </div>
+      </Section>
+
       {/* Dynamic service sections */}
       {services.map((service, index) => (
         <Section
@@ -263,6 +329,83 @@ export default function DashboardServicesEditorPage() {
               onChange={(points) => updateService(index, { points })}
               addLabel="Add bullet point"
             />
+
+            <div className="mt-8 pt-8 border-t border-light-gray" style={{ borderWidth: '0.5px' }}>
+              <h3 className="font-serif text-[16px] text-charcoal mb-5">Arabic Translation (optional)</h3>
+              <div className="space-y-5">
+                <Field label="Title (AR)">
+                  <input
+                    type="text"
+                    value={servicesAr[service.key]?.titleAr ?? ''}
+                    onChange={(e) => setServicesAr(current => ({
+                      ...current,
+                      [service.key]: { ...current[service.key], titleAr: e.target.value }
+                    }))}
+                    dir="rtl"
+                    lang="ar"
+                    className={inputCls}
+                    style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+                  />
+                </Field>
+
+                <div>
+                  <label className="font-sans text-[13px] font-medium text-charcoal mb-3 block">Body paragraphs (AR)</label>
+                  <div className="space-y-3">
+                    {(servicesAr[service.key]?.paragraphsAr ?? []).map((para, paraIndex) => (
+                      <div key={`${service.key}-para-${paraIndex}`}>
+                        <div className="flex gap-2">
+                          <textarea
+                            rows={4}
+                            value={para}
+                            onChange={(e) => setServicesAr(current => {
+                              const ar = current[service.key] || { titleAr: '', paragraphsAr: [] }
+                              const newParagraphs = ar.paragraphsAr.map((p, i) => i === paraIndex ? e.target.value : p)
+                              return {
+                                ...current,
+                                [service.key]: { ...ar, paragraphsAr: newParagraphs }
+                              }
+                            })}
+                            dir="rtl"
+                            lang="ar"
+                            className="flex-1 p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+                            style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setServicesAr(current => {
+                              const ar = current[service.key] || { titleAr: '', paragraphsAr: [] }
+                              const newParagraphs = ar.paragraphsAr.filter((_, i) => i !== paraIndex)
+                              return {
+                                ...current,
+                                [service.key]: { ...ar, paragraphsAr: newParagraphs }
+                              }
+                            })}
+                            disabled={(servicesAr[service.key]?.paragraphsAr ?? []).length === 1}
+                            className="w-[40px] h-[40px] text-[18px] text-taupe hover:text-error bg-light-gray/20 border-none rounded-sm cursor-pointer disabled:opacity-40"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setServicesAr(current => {
+                        const ar = current[service.key] || { titleAr: '', paragraphsAr: [] }
+                        return {
+                          ...current,
+                          [service.key]: { ...ar, paragraphsAr: [...ar.paragraphsAr, ''] }
+                        }
+                      })}
+                      className="px-4 py-2 rounded-full font-sans text-[13px] font-medium text-charcoal bg-transparent border border-charcoal hover:bg-light-gray/20 transition-colors"
+                      style={{ borderWidth: '0.5px' }}
+                    >
+                      Add paragraph (AR)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </Section>
       ))}
@@ -320,6 +463,44 @@ export default function DashboardServicesEditorPage() {
               />
             </Field>
           </div>
+        </div>
+      </Section>
+
+      <Section title="Final CTA - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={ctaAr.titleAr}
+              onChange={(e) => setCtaAr(current => ({ ...current, titleAr: e.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={ctaAr.subtitleAr}
+              onChange={(e) => setCtaAr(current => ({ ...current, subtitleAr: e.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Button label (AR)">
+            <input
+              type="text"
+              value={ctaAr.linkText}
+              onChange={(e) => setCtaAr(current => ({ ...current, linkText: e.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
         </div>
       </Section>
     </div>

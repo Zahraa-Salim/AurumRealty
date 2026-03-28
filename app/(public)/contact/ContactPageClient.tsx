@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { getLocaleFromCookie, type Locale } from '@/lib/i18n'
 import type {
   ContactPageContent,
   SiteSettingsGeneralContent,
@@ -23,6 +24,7 @@ export default function ContactPageClient({
   hours,
   social,
 }: ContactPageClientProps) {
+  const [locale, setLocale] = useState<Locale>('en')
   const [isFocused, setIsFocused] = useState<string | null>(null)
   const [formState, setFormState] = useState<FormState>('idle')
   const [form, setForm] = useState({
@@ -31,6 +33,10 @@ export default function ContactPageClient({
     phone: '',
     message: '',
   })
+
+  useEffect(() => {
+    setLocale(getLocaleFromCookie() as Locale)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,12 +74,14 @@ export default function ContactPageClient({
           <div className="w-full lg:w-[60%]">
             {formState === 'error' && (
               <div className="mb-6 p-4 bg-error/5 border border-error/20 rounded-sm" style={{ borderWidth: '0.5px' }}>
-                <p className="font-sans text-[14px] text-error">Something went wrong. Please check your connection and try again.</p>
+                <p className="font-sans text-[14px] text-error">
+                  {locale === 'ar' ? 'حدث خطأ ما. يرجى التحقق من اتصالك والمحاولة مجددًا.' : 'Something went wrong. Please check your connection and try again.'}
+                </p>
                 <button
                   onClick={() => setFormState('idle')}
                   className="font-sans text-[13px] text-error underline bg-transparent border-none cursor-pointer mt-1 p-0"
                 >
-                  Try again
+                  {locale === 'ar' ? 'حاول مرة أخرى' : 'Try again'}
                 </button>
               </div>
             )}
@@ -85,32 +93,37 @@ export default function ContactPageClient({
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
                 </div>
-                <h2 className="font-serif text-[28px] text-charcoal mb-3">Message sent</h2>
+                <h2 className="font-serif text-[28px] text-charcoal mb-3">
+                  {locale === 'ar' ? 'تم إرسال الرسالة' : 'Message sent'}
+                </h2>
                 <p className="font-sans text-[15px] text-taupe leading-[1.7] mb-8 max-w-[380px]">
-                  Thank you for reaching out. A member of our team will be in touch with you within one business day.
+                  {locale === 'ar'
+                    ? 'شكرًا لتواصلك معنا. سيتصل بك أحد أعضاء فريقنا خلال يوم عمل واحد.'
+                    : 'Thank you for reaching out. A member of our team will be in touch with you within one business day.'}
                 </p>
                 <button
                   onClick={() => setFormState('idle')}
                   className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer"
                 >
-                  Send another message
+                  {locale === 'ar' ? 'إرسال رسالة أخرى' : 'Send another message'}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="name" className="font-sans text-[13px] font-medium text-charcoal">
-                    Name <span className="text-gold">*</span>
+                    {locale === 'ar' ? 'الاسم' : 'Name'} <span className="text-gold">*</span>
                   </label>
                   <input
                     type="text"
                     id="name"
                     required
-                    placeholder="Your full name"
+                    placeholder={locale === 'ar' ? 'اسمك الكامل' : 'Your full name'}
                     value={form.name}
                     onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
                     onFocus={() => setIsFocused('name')}
                     onBlur={() => setIsFocused(null)}
+                    dir={locale === 'ar' ? 'rtl' : 'ltr'}
                     className={`w-full ${inputCls()}`}
                     style={{ borderWidth: isFocused === 'name' ? '1px' : '0.5px' }}
                   />
@@ -118,17 +131,18 @@ export default function ContactPageClient({
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email" className="font-sans text-[13px] font-medium text-charcoal">
-                    Email <span className="text-gold">*</span>
+                    {locale === 'ar' ? 'البريد الإلكتروني' : 'Email'} <span className="text-gold">*</span>
                   </label>
                   <input
                     type="email"
                     id="email"
                     required
-                    placeholder="your.email@example.com"
+                    placeholder={locale === 'ar' ? 'بريدك@الإلكتروني.com' : 'your.email@example.com'}
                     value={form.email}
                     onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
                     onFocus={() => setIsFocused('email')}
                     onBlur={() => setIsFocused(null)}
+                    dir={locale === 'ar' ? 'rtl' : 'ltr'}
                     className={`w-full ${inputCls()}`}
                     style={{ borderWidth: isFocused === 'email' ? '1px' : '0.5px' }}
                   />
@@ -136,7 +150,7 @@ export default function ContactPageClient({
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="phone" className="font-sans text-[13px] font-medium text-charcoal">
-                    Phone
+                    {locale === 'ar' ? 'الهاتف' : 'Phone'}
                   </label>
                   <input
                     type="tel"
@@ -146,6 +160,7 @@ export default function ContactPageClient({
                     onChange={(e) => setForm((current) => ({ ...current, phone: e.target.value }))}
                     onFocus={() => setIsFocused('phone')}
                     onBlur={() => setIsFocused(null)}
+                    dir={locale === 'ar' ? 'rtl' : 'ltr'}
                     className={`w-full ${inputCls()}`}
                     style={{ borderWidth: isFocused === 'phone' ? '1px' : '0.5px' }}
                   />
@@ -153,17 +168,18 @@ export default function ContactPageClient({
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="message" className="font-sans text-[13px] font-medium text-charcoal">
-                    Message <span className="text-gold">*</span>
+                    {locale === 'ar' ? 'الرسالة' : 'Message'} <span className="text-gold">*</span>
                   </label>
                   <textarea
                     id="message"
                     required
                     rows={5}
-                    placeholder="How can we assist you?"
+                    placeholder={locale === 'ar' ? 'كيف يمكننا مساعدتك؟' : 'How can we assist you?'}
                     value={form.message}
                     onChange={(e) => setForm((current) => ({ ...current, message: e.target.value }))}
                     onFocus={() => setIsFocused('message')}
                     onBlur={() => setIsFocused(null)}
+                    dir={locale === 'ar' ? 'rtl' : 'ltr'}
                     className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm placeholder:text-mid-gray placeholder:italic focus:outline-none focus:border-charcoal focus:shadow-focus transition-all duration-200 resize-y min-h-[120px]"
                     style={{ borderWidth: isFocused === 'message' ? '1px' : '0.5px' }}
                   />
@@ -174,11 +190,13 @@ export default function ContactPageClient({
                   disabled={formState === 'submitting'}
                   className="w-full mt-4 bg-gold hover:bg-gold-dark text-charcoal font-sans text-[14px] font-medium py-3.5 rounded-full transition-colors duration-200 border-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {formState === 'submitting' ? 'Sending…' : 'Send message'}
+                  {formState === 'submitting' ? (locale === 'ar' ? 'جاري الإرسال…' : 'Sending…') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send message')}
                 </button>
 
                 <p className="font-sans text-[12px] text-mid-gray text-center">
-                  Required fields marked <span className="text-gold">*</span>. We respond within one business day.
+                  {locale === 'ar'
+                    ? 'الحقول المطلوبة مشار إليها بـ *. نرد على رسائلك خلال يوم عمل واحد.'
+                    : 'Required fields marked *. We respond within one business day.'}
                 </p>
               </form>
             )}
@@ -192,7 +210,7 @@ export default function ContactPageClient({
               <div className="flex flex-col gap-8">
                 <div>
                   <p className="font-sans text-[12px] font-medium text-mid-gray mb-2 uppercase tracking-wider">
-                    Address
+                    {locale === 'ar' ? 'العنوان' : 'Address'}
                   </p>
                   <p className="font-sans text-[14px] text-charcoal leading-[1.6]">
                     {general.companyName && (
@@ -212,7 +230,7 @@ export default function ContactPageClient({
 
                 <div>
                   <p className="font-sans text-[12px] font-medium text-mid-gray mb-2 uppercase tracking-wider">
-                    Contact
+                    {locale === 'ar' ? 'تواصل' : 'Contact'}
                   </p>
                   <p className="font-sans text-[14px] text-charcoal mb-1">{general.phone}</p>
                   <a
@@ -225,7 +243,7 @@ export default function ContactPageClient({
 
                 <div>
                   <p className="font-sans text-[12px] font-medium text-mid-gray mb-2 uppercase tracking-wider">
-                    Hours
+                    {locale === 'ar' ? 'الساعات' : 'Hours'}
                   </p>
                   <div className="space-y-1">
                     {hours.rows.map((row, index) => (
@@ -238,7 +256,7 @@ export default function ContactPageClient({
 
                 <div>
                   <p className="font-sans text-[12px] font-medium text-mid-gray mb-2 uppercase tracking-wider">
-                    Social
+                    {locale === 'ar' ? 'وسائل التواصل' : 'Social'}
                   </p>
                   <div className="flex flex-col gap-2">
                     {social.links

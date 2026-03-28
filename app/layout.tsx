@@ -9,7 +9,6 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import './styles/globals.css'
 import { AuthSessionProvider } from '@/components/AuthSessionProvider'
-import { getLocaleFromCookieHeader, getDir } from '@/lib/i18n'
 
 export const metadata: Metadata = {
   title: {
@@ -32,10 +31,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = await cookies()
   const localeCookie = cookieStore.get('locale')?.value ?? null
   const locale = localeCookie === 'ar' ? 'ar' : 'en'
-  const dir = getDir(locale)
 
   return (
-    <html lang={locale} dir={dir}>
+    <html lang={locale}>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Arabic:wght@300;400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>

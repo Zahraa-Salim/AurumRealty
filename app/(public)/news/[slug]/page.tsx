@@ -16,7 +16,7 @@ export const revalidate = 60
 
 type RelatedNewsArticle = Pick<
   NewsArticle,
-  'slug' | 'title' | 'category' | 'heroImage' | 'publishedAt'
+  'slug' | 'title' | 'category' | 'heroImage' | 'publishedAt' | 'titleAr'
 >
 
 const categoryColors: Record<string, string> = {
@@ -57,7 +57,7 @@ export default async function NewsDetailPage({
       where: { isPublished: true, slug: { not: slug } },
       orderBy: { publishedAt: 'desc' },
       take: 3,
-      select: { slug: true, title: true, category: true, heroImage: true, publishedAt: true },
+      select: { slug: true, title: true, titleAr: true, category: true, heroImage: true, publishedAt: true },
     })
   } catch {
     notFound()
@@ -212,7 +212,7 @@ export default async function NewsDetailPage({
                 </span>
 
                 <h3 className="font-serif text-[16px] text-charcoal leading-[1.3] group-hover:text-taupe transition-colors">
-                  {r.title}
+                  {localise(r.title, r.titleAr, locale)}
                 </h3>
 
                 <p className="font-sans text-[12px] text-mid-gray mt-2">

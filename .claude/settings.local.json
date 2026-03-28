@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"c:/Users/CLICK ONCE/Downloads/aurum-realty/app/\\(public\\)/blog/\")",
+      "Bash(ls \"c:/Users/CLICK ONCE/Downloads/aurum-realty/app/\\(public\\)/properties/\")"
+    ]
+  }
+}

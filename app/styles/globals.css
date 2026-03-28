@@ -312,8 +312,6 @@ button {
 
 /* ── Arabic / RTL support ─────────────────────────────────────────────────── */
 
-/* IBM Plex Arabic — clean geometric, pairs well with Georgia/sans */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Arabic:wght@300;400;500;600&display=swap');
 
 :root {
   --font-arabic: 'IBM Plex Arabic', 'Noto Kufi Arabic', 'Arial', sans-serif;

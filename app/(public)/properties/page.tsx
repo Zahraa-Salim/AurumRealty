@@ -7,11 +7,12 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { localise, getLocaleFromCookie, type Locale } from '@/lib/i18n'
 
 type Property = {
   id: number; title: string; price: string; neighbourhood: string
   type: string; status: string; bedrooms: number; bathrooms: number
-  area: string; images: string[]
+  area: string; images: string[]; titleAr?: string
 }
 const PAGE_SIZE = 9
 const STATUSES  = ['For Sale','For Rent','New Development']
@@ -58,10 +59,15 @@ export default function PropertiesPage() {
   const [draft,        setDraft]        = useState<Filters>(EMPTY)
   const [mounted,      setMounted]      = useState(false)
   const [visible,      setVisible]      = useState(false)
+  const [locale,       setLocale]       = useState<Locale>('en')
   const drawerRef = useRef<HTMLDivElement>(null)
 
   const TYPES     = [...new Set(all.map(p=>p.type))].sort()
   const LOCATIONS = [...new Set(all.map(p=>p.neighbourhood))].sort()
+
+  useEffect(() => {
+    setLocale(getLocaleFromCookie() as Locale)
+  }, [])
 
   useEffect(() => {
     fetch('/api/properties').then(r=>r.json()).then(d=>{setAll(d);setLoading(false)}).catch(()=>{setError(true);setLoading(false)})
@@ -178,7 +184,7 @@ export default function PropertiesPage() {
                           <span className="absolute top-3 right-3 font-sans text-[11px] text-taupe bg-white/90 px-2.5 py-1 rounded-sm">{p.type}</span>
                         </div>
                         <div className="p-5">
-                          <h3 className="font-serif text-[18px] text-charcoal mb-2">{p.title}</h3>
+                          <h3 className="font-serif text-[18px] text-charcoal mb-2">{localise(p.title, p.titleAr, locale)}</h3>
                           <p className="font-sans text-[16px] font-medium text-gold mb-3">{p.price}</p>
                           <p className="font-sans text-[13px] text-taupe mb-1">{p.bedrooms} bed · {p.bathrooms} bath · {p.area}</p>
                           <p className="font-sans text-[12px] text-mid-gray italic">{p.neighbourhood}</p>

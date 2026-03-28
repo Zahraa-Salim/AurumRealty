@@ -9,12 +9,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { localise, getLocaleFromCookie, type Locale } from '@/lib/i18n'
 
 type Property = {
   id:number; title:string; price:string; address:string; neighbourhood:string
   status:string; type:string; bedrooms:number; bathrooms:number; area:string
   yearBuilt:string|null; lotSize:string|null; description:string|null
   features:string[]; images:string[]; agentName:string|null
+  titleAr?:string; descriptionAr?:string; featuresAr?:string[]
 }
 type ModalType = 'showing'|'agent'|null
 type FormState = 'idle'|'submitting'|'success'|'error'
@@ -168,6 +170,11 @@ export default function PropertyDetailPage() {
   const [missing, setMissing]  = useState(false)
   const [modal,   setModal]    = useState<ModalType>(null)
   const [heroIdx, setHeroIdx]  = useState(0)
+  const [locale,  setLocale]   = useState<Locale>('en')
+
+  useEffect(()=>{
+    setLocale(getLocaleFromCookie() as Locale)
+  },[])
 
   useEffect(()=>{
     if (!params?.id) return
@@ -217,22 +224,22 @@ export default function PropertyDetailPage() {
               <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{property.type}</span>
               <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{property.neighbourhood}</span>
             </div>
-            <h1 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.1] mb-4">{property.title}</h1>
+            <h1 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.1] mb-4">{localise(property.title, property.titleAr, locale)}</h1>
             <p className="font-sans text-[26px] font-medium text-gold mb-2">{property.price}</p>
             <p className="font-sans text-[14px] text-taupe italic">{property.address}</p>
           </div>
 
           {property.description&&(
             <div className="font-sans text-[14px] text-taupe leading-[1.8] space-y-5 mb-12">
-              {property.description.split('\n\n').filter(Boolean).map((p,i)=><p key={i}>{p}</p>)}
+              {(locale === 'ar' && property.descriptionAr ? property.descriptionAr : property.description).split('\n\n').filter(Boolean).map((p,i)=><p key={i}>{p}</p>)}
             </div>
           )}
 
           {(property?.features?.length ?? 0)>0&&(
             <div className="mb-8">
-              <h2 className="font-serif text-[24px] text-charcoal mb-6">Property features</h2>
+              <h2 className="font-serif text-[24px] text-charcoal mb-6">{locale === 'ar' ? 'ميزات العقار' : 'Property features'}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-8">
-                {property.features.map(f=>(
+                {(locale === 'ar' && property.featuresAr?.length ? property.featuresAr : property.features).map(f=>(
                   <div key={f} className="flex items-center gap-2 font-sans text-[14px] text-taupe">
                     <span className="w-4 h-4 rounded-full bg-gold/15 flex items-center justify-center flex-shrink-0">
                       <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 6l3 3 5-5"/></svg>

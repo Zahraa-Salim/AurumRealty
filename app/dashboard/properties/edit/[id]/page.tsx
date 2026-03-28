@@ -39,7 +39,10 @@ export default function DashboardPropertyEditPage() {
     title: '', price: '', address: '', neighbourhood: '', status: '',
     type: '', bedrooms: '', bathrooms: '', area: '', yearBuilt: '', lotSize: '',
     description: '', agentName: '', listingExpiresAt: '', isPublished: false,
+    titleAr: '', descriptionAr: '',
   })
+  const [featuresAr, setFeaturesAr] = useState<string[]>([])
+  const [newFeatureAr, setNewFeatureAr] = useState('')
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['properties.edit'])
 
   useEffect(() => {
@@ -59,8 +62,10 @@ export default function DashboardPropertyEditPage() {
           description: d.description ?? '', agentName: d.agentName ?? '',
           listingExpiresAt: d.listingExpiresAt ? String(d.listingExpiresAt).slice(0, 10) : '',
           isPublished: d.isPublished ?? false,
+          titleAr: d.titleAr ?? '', descriptionAr: d.descriptionAr ?? '',
         })
         setFeatures(d.features ?? [])
+        setFeaturesAr(d.featuresAr ?? [])
         setImages(d.images ?? [])
         setLoading(false)
       })
@@ -106,7 +111,7 @@ export default function DashboardPropertyEditPage() {
           ...form,
           bedrooms:  Number(form.bedrooms)  || 0,
           bathrooms: Number(form.bathrooms) || 0,
-          features, images,
+          features, featuresAr, images,
         }),
       })
       if (!res.ok) throw new Error()
@@ -240,6 +245,43 @@ export default function DashboardPropertyEditPage() {
             {AGENTS.map(a => <option key={a}>{a}</option>)}
           </select>
         </F>
+      </S>
+
+      <S title="Arabic Translation (optional)">
+        <div className="space-y-6">
+          <F label="Title (AR)">
+            <input type="text" value={form.titleAr} onChange={e => set('titleAr', e.target.value)} dir="rtl" lang="ar" className={`w-full ${ic}`} style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </F>
+          <F label="Description (AR)">
+            <textarea
+              value={form.descriptionAr}
+              onChange={e => set('descriptionAr', e.target.value)}
+              rows={5}
+              dir="rtl"
+              lang="ar"
+              className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+              style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}}
+            />
+          </F>
+          <div className="border-t border-light-gray pt-6">
+            <p className="font-sans text-[13px] font-medium text-charcoal mb-4">Features (Arabic)</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {featuresAr.map((f, i) => (
+                <span key={i} className="inline-flex items-center gap-2 bg-cream/50 px-3 py-1.5 rounded-full" dir="rtl">
+                  <span className="font-sans text-[13px] text-charcoal">{f}</span>
+                  <button onClick={() => setFeaturesAr(a => a.filter((_, j) => j !== i))} className="text-taupe hover:text-error text-[14px]">×</button>
+                </span>
+              ))}
+            </div>
+            <input type="text" dir="rtl" lang="ar" placeholder="الميزات بالعربية…" value={newFeatureAr}
+              onChange={e => setNewFeatureAr(e.target.value)} onKeyDown={(e) => {
+                if (e.key === 'Enter' && newFeatureAr.trim()) {
+                  e.preventDefault(); setFeaturesAr(f => [...f, newFeatureAr.trim()]); setNewFeatureAr('')
+                }
+              }}
+              className={`w-full md:w-[300px] ${ic}`} style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </div>
+        </div>
       </S>
     </div>
   )

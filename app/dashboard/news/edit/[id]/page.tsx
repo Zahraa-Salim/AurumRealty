@@ -30,6 +30,9 @@ export default function DashboardEditNewsArticlePage() {
   const [heroImage,   setHeroImage]   = useState('')
   const [publishDate, setPublishDate] = useState('')
   const [isPublished, setIsPublished] = useState(false)
+  const [titleAr,     setTitleAr]     = useState('')
+  const [summaryAr,   setSummaryAr]   = useState('')
+  const [bodyAr,      setBodyAr]      = useState('')
   const [saveState,   setSaveState]   = useState<SaveState>('idle')
   const [errorMsg,    setErrorMsg]    = useState('')
 
@@ -45,6 +48,7 @@ export default function DashboardEditNewsArticlePage() {
         setAuthor(d.author ?? ''); setSummary(d.summary ?? ''); setBody(d.body ?? '')
         setHeroImage(d.heroImage ?? ''); setIsPublished(d.isPublished ?? false)
         setPublishDate(d.publishedAt ? d.publishedAt.split('T')[0] : '')
+        setTitleAr(d.titleAr ?? ''); setSummaryAr(d.summaryAr ?? ''); setBodyAr(d.bodyAr ?? '')
         setLoading(false)
       })
       .catch(() => { setNotFound(true); setLoading(false) })
@@ -73,6 +77,9 @@ export default function DashboardEditNewsArticlePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title, slug, category, author, summary, body,
+          titleAr:     titleAr     || null,
+          summaryAr:   summaryAr   || null,
+          bodyAr:      bodyAr      || null,
           heroImage:   heroImage  || null,
           isPublished,
           publishedAt: isPublished ? (publishDate ? new Date(publishDate) : new Date()) : null,
@@ -189,6 +196,31 @@ export default function DashboardEditNewsArticlePage() {
           placeholder="Write your article here…"
           minHeight={400}
         />
+      </div>
+
+      <div className="bg-white border border-light-gray rounded-sm p-8" style={{borderWidth:'0.5px'}}>
+        <h2 className="font-serif text-[16px] text-charcoal mb-6">Arabic Translation <span className="font-normal text-taupe">(optional)</span></h2>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Title (AR)</label>
+            <input type="text" value={titleAr} onChange={e => setTitleAr(e.target.value)} dir="rtl" lang="ar" className={`w-full ${ic}`} style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Summary (AR)</label>
+            <textarea value={summaryAr} onChange={e => setSummaryAr(e.target.value)} rows={3} dir="rtl" lang="ar"
+              className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+              style={{fontFamily: 'var(--font-arabic)', borderWidth:'0.5px'}} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="font-sans text-[13px] font-medium text-charcoal">Body (AR)</label>
+            <RichTextEditor
+              value={bodyAr}
+              onChange={setBodyAr}
+              placeholder="اكتب مقالتك هنا…"
+              minHeight={400}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

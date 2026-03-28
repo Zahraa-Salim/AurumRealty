@@ -63,6 +63,10 @@ export async function PATCH(
         ...(body.pullQuote !== undefined && { pullQuote: body.pullQuote }),
         ...(body.heroImage !== undefined && { heroImage: body.heroImage }),
         ...(body.readTime !== undefined && { readTime: body.readTime }),
+        ...(body.titleAr !== undefined && { titleAr: body.titleAr }),
+        ...(body.subtitleAr !== undefined && { subtitleAr: body.subtitleAr }),
+        ...(body.bodyAr !== undefined && { bodyAr: body.bodyAr }),
+        ...(body.pullQuoteAr !== undefined && { pullQuoteAr: body.pullQuoteAr }),
         ...(body.isPublished !== undefined && { isPublished: body.isPublished }),
         ...(body.publishedAt !== undefined && {
           publishedAt: body.publishedAt ? new Date(body.publishedAt) : null,

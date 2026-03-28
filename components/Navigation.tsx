@@ -14,17 +14,23 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AurumLogo } from '@/components/AurumLogo'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import type { Locale } from '@/lib/i18n'
 
-const navLinks = [
-  { label: 'Home',       path: '/' },
-  { label: 'Properties', path: '/properties' },
-  { label: 'Services',   path: '/services' },
-  { label: 'About',      path: '/about' },
-  { label: 'Blog',       path: '/blog' },
-  { label: 'News',       path: '/news' },
+const navPaths = [
+  { path: '/' },
+  { path: '/properties' },
+  { path: '/services' },
+  { path: '/about' },
+  { path: '/blog' },
+  { path: '/news' },
 ]
 
-export function Navigation() {
+const navLabels = {
+  en: ['Home', 'Properties', 'Services', 'About', 'Blog', 'News'],
+  ar: ['الرئيسية', 'العقارات', 'الخدمات', 'عن الشركة', 'المدونة', 'الأخبار'],
+}
+
+export function Navigation({ locale }: { locale: Locale }) {
   const [isOpen,   setIsOpen]   = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
@@ -103,7 +109,7 @@ export function Navigation() {
 
           {/* DESKTOP LINKS */}
           <div className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {navPaths.map((link, i) => (
               <Link
                 key={link.path}
                 href={link.path}
@@ -113,7 +119,7 @@ export function Navigation() {
                     : 'text-taupe hover:text-charcoal hover:bg-light-gray/50'
                 }`}
               >
-                {link.label}
+                {navLabels[locale][i]}
                 {/* active — thin underline, no background */}
                 {isActive(link.path) && (
                   <span className="absolute bottom-0 left-3 right-3 h-[1.5px] bg-charcoal rounded-full" />
@@ -133,7 +139,7 @@ export function Navigation() {
                   : 'bg-gold hover:bg-gold-dark text-charcoal border-gold hover:border-gold-dark'
               }`}
             >
-              Contact us
+              {locale === 'ar' ? 'تواصل معنا' : 'Contact us'}
             </Link>
           </div>
 
@@ -188,7 +194,7 @@ export function Navigation() {
               className="flex items-center justify-between px-6 py-0"
               style={{ height: '64px', borderBottom: '0.5px solid #E8E6E1' }}
             >
-              <span className="font-serif text-[16px] text-charcoal">Aurum Realty</span>
+              <span className="font-serif text-[16px] text-charcoal">{locale === 'ar' ? 'أوروم ريالتي' : 'Aurum Realty'}</span>
               <button
                 onClick={closeMenu}
                 className="w-9 h-9 flex items-center justify-center text-taupe hover:text-charcoal transition-colors bg-transparent border-none cursor-pointer rounded-sm hover:bg-light-gray/40"
@@ -202,7 +208,7 @@ export function Navigation() {
             {/* nav links */}
             <div className="flex-1 overflow-y-auto px-4 py-6">
               <nav className="flex flex-col gap-1">
-                {navLinks.map((link, i) => (
+                {navPaths.map((link, i) => (
                   <Link
                     key={link.path}
                     href={link.path}
@@ -219,7 +225,7 @@ export function Navigation() {
                       transition: `opacity 0.28s ease ${i * 30}ms, transform 0.28s ease ${i * 30}ms, background-color 0.15s ease`,
                     }}
                   >
-                    <span>{link.label}</span>
+                    <span>{navLabels[locale][i]}</span>
                     {isActive(link.path) && (
                       <span className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0" />
                     )}
@@ -242,10 +248,10 @@ export function Navigation() {
                 style={{
                   opacity:   visible ? 1 : 0,
                   transform: visible ? 'translateX(0)' : 'translateX(16px)',
-                  transition: `opacity 0.28s ease ${navLinks.length * 30 + 20}ms, transform 0.28s ease ${navLinks.length * 30 + 20}ms`,
+                  transition: `opacity 0.28s ease ${navPaths.length * 30 + 20}ms, transform 0.28s ease ${navPaths.length * 30 + 20}ms`,
                 }}
               >
-                Contact us
+                {locale === 'ar' ? 'تواصل معنا' : 'Contact us'}
               </Link>
             </div>
 

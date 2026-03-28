@@ -11,8 +11,10 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { BLOG_TOPIC_OPTIONS } from '@/lib/content-options'
+import { localise, type Locale } from '@/lib/i18n'
 
-const TOPICS = ['All', ...BLOG_TOPIC_OPTIONS]
+const TOPICS_EN = ['All', ...BLOG_TOPIC_OPTIONS]
+const TOPICS_AR = ['الكل', 'توقعات السوق', 'استثمار', 'رؤى المشترين', 'أدلة']
 
 const topicColor: Record<string, string> = {
   'Market outlook': 'bg-blue-50 text-blue-800',
@@ -25,24 +27,27 @@ type Post = {
   id: number
   slug: string
   title: string
+  titleAr: string | null
   topic: string
   author: string
   subtitle: string | null
+  subtitleAr: string | null
   heroImage: string | null
   readTime: string | null
   publishedAt: Date | string | null
 }
 
-export default function BlogClientFilter({ posts }: { posts: Post[] }) {
+export default function BlogClientFilter({ posts, locale }: { posts: Post[]; locale: Locale }) {
   const [activeTopic, setActiveTopic] = useState('All')
+  const TOPICS = locale === 'ar' ? TOPICS_AR : TOPICS_EN
 
   const featured = posts[0]
-  const filtered  = posts.filter(p => activeTopic === 'All' || p.topic === activeTopic)
-  const gridPosts = activeTopic === 'All' ? posts.slice(1) : filtered
+  const filtered  = posts.filter(p => activeTopic === 'All' || (locale === 'ar' && activeTopic === TOPICS_AR[0]) || p.topic === activeTopic)
+  const gridPosts = activeTopic === 'All' || (locale === 'ar' && activeTopic === TOPICS_AR[0]) ? posts.slice(1) : filtered
 
   const formatDate = (d: Date | string | null) => {
     if (!d) return ''
-    return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    return new Date(d).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   }
 
   return (
@@ -65,10 +70,12 @@ export default function BlogClientFilter({ posts }: { posts: Post[] }) {
                 {featured.topic}
               </span>
               <h2 className="font-serif text-[28px] md:text-[34px] text-charcoal leading-[1.2] mb-4 group-hover:text-taupe transition-colors">
-                {featured.title}
+                {localise(featured.title, featured.titleAr, locale)}
               </h2>
               {featured.subtitle && (
-                <p className="font-sans text-[15px] text-taupe leading-[1.7] mb-5">{featured.subtitle}</p>
+                <p className="font-sans text-[15px] text-taupe leading-[1.7] mb-5">
+                  {localise(featured.subtitle, featured.subtitleAr, locale)}
+                </p>
               )}
               <div className="flex items-center gap-2 font-sans text-[13px] text-mid-gray">
                 <span>{featured.author}</span>
@@ -102,9 +109,11 @@ export default function BlogClientFilter({ posts }: { posts: Post[] }) {
       {/* Article grid */}
       {gridPosts.length === 0 ? (
         <div className="text-center py-16">
-          <p className="font-serif text-[22px] text-charcoal mb-3">No articles in this topic yet</p>
-          <button onClick={() => setActiveTopic('All')} className="font-sans text-[13px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer">
-            View all articles
+          <p className="font-serif text-[22px] text-charcoal mb-3">
+            {locale === 'ar' ? 'لا توجد مقالات في هذا الموضوع حتى الآن' : 'No articles in this topic yet'}
+          </p>
+          <button onClick={() => setActiveTopic(locale === 'ar' ? TOPICS_AR[0] : 'All')} className="font-sans text-[13px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer">
+            {locale === 'ar' ? 'عرض جميع المقالات' : 'View all articles'}
           </button>
         </div>
       ) : (
@@ -125,10 +134,12 @@ export default function BlogClientFilter({ posts }: { posts: Post[] }) {
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-serif text-[18px] text-charcoal leading-[1.3] mb-3 group-hover:text-taupe transition-colors flex-1">
-                    {post.title}
+                    {localise(post.title, post.titleAr, locale)}
                   </h3>
                   {post.subtitle && (
-                    <p className="font-sans text-[13px] text-taupe line-clamp-1 mb-4">{post.subtitle}</p>
+                    <p className="font-sans text-[13px] text-taupe line-clamp-1 mb-4">
+                      {localise(post.subtitle, post.subtitleAr, locale)}
+                    </p>
                   )}
                   <div className="flex items-center justify-between pt-4 border-t border-light-gray" style={{ borderWidth: '0.5px 0 0 0' }}>
                     <div className="flex items-center gap-2">

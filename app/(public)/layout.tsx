@@ -15,14 +15,20 @@
 
 import { Navigation } from '@/components/Navigation'
 import { Footer } from '@/components/Footer'
+import { getServerLocale, getDir, type Locale } from '@/lib/i18n'
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const locale = (await getServerLocale()) as Locale
+  const dir = getDir(locale)
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navigation />
-      {/* pt-[64px] offsets the fixed navbar height so content never hides behind it */}
-      <div className="flex-1 pt-[64px]">{children}</div>
-      <Footer />
+    <div dir={dir} className="min-h-screen flex flex-col bg-white contents">
+      <div className="min-h-screen flex flex-col bg-white">
+        <Navigation locale={locale} />
+        {/* pt-[64px] offsets the fixed navbar height so content never hides behind it */}
+        <div className="flex-1 pt-[64px]">{children}</div>
+        <Footer locale={locale} />
+      </div>
     </div>
   )
 }

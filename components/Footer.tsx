@@ -14,6 +14,7 @@ import React from 'react'
 import Link from 'next/link'
 import { AurumLogo } from '@/components/AurumLogo'
 import { prisma } from '@/lib/prisma'
+import type { Locale } from '@/lib/i18n'
 
 export const revalidate = 60
 
@@ -47,7 +48,7 @@ function parseBody(body: string | null | undefined): Record<string, string> {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export async function Footer() {
+export async function Footer({ locale }: { locale: Locale }) {
   // Fetch all three keys in one query
   let general: Record<string, string> = {}
   let hours: Record<string, string> = {}
@@ -115,24 +116,24 @@ export async function Footer() {
           {/* Col 2 — Quick links (static — these are routes, not content) */}
           <div>
             <p className="font-sans text-[14px] font-medium text-white mb-6">
-              Quick Links
+              {locale === 'ar' ? 'روابط سريعة' : 'Quick Links'}
             </p>
             <nav className="flex flex-col gap-3">
               {[
-                { label: 'Home',       href: '/'           },
-                { label: 'Properties', href: '/properties' },
-                { label: 'Services',   href: '/services'   },
-                { label: 'About',      href: '/about'      },
-                { label: 'Blog',       href: '/blog'       },
-                { label: 'News',       href: '/news'       },
-                { label: 'Contact',    href: '/contact'    },
+                { labelEn: 'Home',       labelAr: 'الرئيسية', href: '/'           },
+                { labelEn: 'Properties', labelAr: 'العقارات', href: '/properties' },
+                { labelEn: 'Services',   labelAr: 'الخدمات', href: '/services'   },
+                { labelEn: 'About',      labelAr: 'عن الشركة', href: '/about'      },
+                { labelEn: 'Blog',       labelAr: 'المدونة', href: '/blog'       },
+                { labelEn: 'News',       labelAr: 'الأخبار', href: '/news'       },
+                { labelEn: 'Contact',    labelAr: 'تواصل', href: '/contact'    },
               ].map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className="font-sans text-[13px] text-mid-gray no-underline hover:text-gold transition-colors duration-200"
                 >
-                  {link.label}
+                  {locale === 'ar' ? link.labelAr : link.labelEn}
                 </Link>
               ))}
             </nav>
@@ -141,7 +142,7 @@ export async function Footer() {
           {/* Col 3 — Contact details */}
           <div>
             <p className="font-sans text-[14px] font-medium text-white mb-6">
-              Contact
+              {locale === 'ar' ? 'تواصل' : 'Contact'}
             </p>
             <div className="flex flex-col gap-3 font-sans text-[13px] text-mid-gray">
               <p>{phone}</p>
@@ -165,16 +166,16 @@ export async function Footer() {
           {/* Col 4 — Hours + social */}
           <div>
             <p className="font-sans text-[14px] font-medium text-white mb-6">
-              Hours
+              {locale === 'ar' ? 'الساعات' : 'Hours'}
             </p>
             <div className="flex flex-col gap-3 font-sans text-[13px] text-mid-gray mb-8">
-              <p>Monday – Friday: {monFri}</p>
-              <p>Saturday: {saturday}</p>
-              <p>Sunday: {sunday}</p>
+              <p>{locale === 'ar' ? 'الاثنين – الجمعة' : 'Monday – Friday'}: {monFri}</p>
+              <p>{locale === 'ar' ? 'السبت' : 'Saturday'}: {saturday}</p>
+              <p>{locale === 'ar' ? 'الأحد' : 'Sunday'}: {sunday}</p>
             </div>
 
             <p className="font-sans text-[14px] font-medium text-white mb-4">
-              Connect
+              {locale === 'ar' ? 'وسائل التواصل' : 'Connect'}
             </p>
             <div className="flex flex-col gap-3">
               {socialLinks.map((s) => (
@@ -194,7 +195,9 @@ export async function Footer() {
 
         <div className="mt-16 pt-8 border-t border-taupe/30">
           <p className="font-sans text-[13px] text-taupe">
-            © {new Date().getFullYear()} Aurum Realty. All rights reserved.
+            {locale === 'ar'
+              ? `© ${new Date().getFullYear()} أوروم ريالتي. جميع الحقوق محفوظة.`
+              : `© ${new Date().getFullYear()} Aurum Realty. All rights reserved.`}
           </p>
         </div>
       </div>

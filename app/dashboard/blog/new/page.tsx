@@ -38,6 +38,10 @@ export default function DashboardNewBlogPage() {
   const [heroImage, setHeroImage] = useState('')
   const [author, setAuthor] = useState(sessionAuthor)
   const [published, setPublished] = useState(false)
+  const [titleAr, setTitleAr] = useState('')
+  const [subtitleAr, setSubtitleAr] = useState('')
+  const [bodyAr, setBodyAr] = useState('')
+  const [pullQuoteAr, setPullQuoteAr] = useState('')
 
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
@@ -90,6 +94,10 @@ export default function DashboardNewBlogPage() {
           body: body.trim(),
           pullQuote: pullQuote.trim() || null,
           heroImage: heroImage || null,
+          titleAr: titleAr.trim() || null,
+          subtitleAr: subtitleAr.trim() || null,
+          bodyAr: bodyAr.trim() || null,
+          pullQuoteAr: pullQuoteAr.trim() || null,
           isPublished: published,
         }),
       })
@@ -210,6 +218,28 @@ export default function DashboardNewBlogPage() {
             </F>
             <F label="Pull quote (optional)">
               <input value={pullQuote} onChange={e => setPullQuote(e.target.value)} type="text" placeholder="A memorable sentence to highlight mid-article" className={ic} style={{ borderWidth: '0.5px' }} />
+            </F>
+          </div>
+        </Section>
+
+        <Section title="Arabic Translation (optional)">
+          <div className="space-y-5">
+            <F label="Title (AR)">
+              <input value={titleAr} onChange={e => setTitleAr(e.target.value)} type="text" dir="rtl" lang="ar" style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} className={ic} />
+            </F>
+            <F label="Subtitle (AR)">
+              <input value={subtitleAr} onChange={e => setSubtitleAr(e.target.value)} type="text" dir="rtl" lang="ar" style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} className={ic} />
+            </F>
+            <F label="Body (AR)">
+              <RichTextEditor
+                value={bodyAr}
+                onChange={setBodyAr}
+                placeholder="اكتب مقالتك هنا…"
+                minHeight={400}
+              />
+            </F>
+            <F label="Pull quote (AR)">
+              <input value={pullQuoteAr} onChange={e => setPullQuoteAr(e.target.value)} type="text" dir="rtl" lang="ar" placeholder="جملة يجب تسليط الضوء عليها" style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} className={ic} />
             </F>
           </div>
         </Section>

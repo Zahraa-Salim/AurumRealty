@@ -35,6 +35,9 @@ export default function DashboardNewPropertyPage() {
   const [heroImage, setHeroImage] = useState('')
   const [featuresText, setFeaturesText] = useState('')
   const [published, setPublished] = useState(false)
+  const [titleAr, setTitleAr] = useState('')
+  const [descriptionAr, setDescriptionAr] = useState('')
+  const [featuresArText, setFeaturesArText] = useState('')
 
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
@@ -70,6 +73,11 @@ export default function DashboardNewPropertyPage() {
       .map(item => item.trim())
       .filter(Boolean)
 
+    const featuresAr = featuresArText
+      .split('\n')
+      .map(item => item.trim())
+      .filter(Boolean)
+
     try {
       const res = await fetch('/api/properties', {
         method: 'POST',
@@ -87,6 +95,9 @@ export default function DashboardNewPropertyPage() {
           area: area.trim(),
           listingExpiresAt: listingExpiresAt || null,
           features,
+          titleAr: titleAr.trim() || null,
+          descriptionAr: descriptionAr.trim() || null,
+          featuresAr: featuresAr.length > 0 ? featuresAr : [],
           images: heroImage ? [heroImage] : [],
           isPublished: published,
         }),
@@ -231,6 +242,37 @@ export default function DashboardNewPropertyPage() {
             />
           </F>
           <p className="font-sans text-[12px] text-taupe mt-2">Each line becomes a separate feature bullet point.</p>
+        </Section>
+
+        <Section title="Arabic Translation (optional)">
+          <div className="space-y-5">
+            <F label="Title (AR)">
+              <input value={titleAr} onChange={e => setTitleAr(e.target.value)} type="text" dir="rtl" lang="ar" style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} className={ic} />
+            </F>
+            <F label="Description (AR)">
+              <textarea
+                value={descriptionAr}
+                onChange={e => setDescriptionAr(e.target.value)}
+                rows={5}
+                dir="rtl"
+                lang="ar"
+                className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+                style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+              />
+            </F>
+            <F label="Features (AR, one per line)">
+              <textarea
+                value={featuresArText}
+                onChange={e => setFeaturesArText(e.target.value)}
+                rows={6}
+                dir="rtl"
+                lang="ar"
+                placeholder="الميزات بالعربية..."
+                className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+                style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+              />
+            </F>
+          </div>
         </Section>
       </div>
     </div>

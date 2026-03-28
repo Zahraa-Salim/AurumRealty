@@ -17,11 +17,16 @@ export type HomeHeroContent = {
   subtitle: string
   linkText: string
   linkUrl: string
+  titleAr?: string
+  subtitleAr?: string
+  linkTextAr?: string
 }
 
 export type HomeServicesContent = {
   title: string
   subtitle: string
+  titleAr?: string
+  subtitleAr?: string
 }
 
 export type HomeAboutContent = {
@@ -30,6 +35,9 @@ export type HomeAboutContent = {
   image: string
   linkText: string
   linkUrl: string
+  titleAr?: string
+  subtitleAr?: string
+  bodyAr?: string
 }
 
 export type HomeJournalContent = {
@@ -42,6 +50,9 @@ export type HomeCtaContent = {
   subtitle: string
   linkText: string
   linkUrl: string
+  titleAr?: string
+  subtitleAr?: string
+  linkTextAr?: string
 }
 
 export type HomeFeaturedPropertiesContent = {
@@ -53,6 +64,9 @@ export type AboutStoryContent = {
   subtitle: string
   paragraphs: string[]
   image: string
+  titleAr?: string
+  subtitleAr?: string
+  bodyAr?: string
 }
 
 export type AboutTeamMember = {
@@ -127,6 +141,8 @@ export type ServiceSectionContent = {
   points: string[]
   image: string
   reverse?: boolean
+  titleAr?: string
+  bodyAr?: string
 }
 
 export type ServicesIndexContent = {
@@ -136,6 +152,8 @@ export type ServicesIndexContent = {
 export type ServicesHeaderContent = {
   title: string
   subtitle: string
+  titleAr?: string
+  subtitleAr?: string
 }
 
 export const HOME_HERO_DEFAULTS: HomeHeroContent = {

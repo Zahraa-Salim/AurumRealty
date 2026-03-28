@@ -39,6 +39,9 @@ export default function DashboardNewNewsPage() {
   const [heroImage, setHeroImage] = useState('')
   const [author, setAuthor] = useState(sessionAuthor)
   const [published, setPublished] = useState(false)
+  const [titleAr, setTitleAr] = useState('')
+  const [summaryAr, setSummaryAr] = useState('')
+  const [bodyAr, setBodyAr] = useState('')
 
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
@@ -96,6 +99,9 @@ export default function DashboardNewNewsPage() {
           summary: summary.trim(),
           body: body.trim(),
           heroImage: heroImage || null,
+          titleAr: titleAr.trim() || null,
+          summaryAr: summaryAr.trim() || null,
+          bodyAr: bodyAr.trim() || null,
           isPublished: published,
         }),
       })
@@ -221,6 +227,34 @@ export default function DashboardNewNewsPage() {
                 value={body}
                 onChange={setBody}
                 placeholder="Write your article here…"
+                minHeight={400}
+              />
+            </F>
+          </div>
+        </Section>
+
+        <Section title="Arabic Translation (optional)">
+          <div className="space-y-5">
+            <F label="Title (AR)">
+              <input value={titleAr} onChange={e => setTitleAr(e.target.value)} type="text" dir="rtl" lang="ar" style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} className={ic} />
+            </F>
+            <F label="Summary (AR)">
+              <textarea
+                value={summaryAr}
+                onChange={e => setSummaryAr(e.target.value)}
+                rows={3}
+                dir="rtl"
+                lang="ar"
+                placeholder="ملخص قصير"
+                className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm focus:outline-none focus:border-charcoal resize-y"
+                style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+              />
+            </F>
+            <F label="Body (AR)">
+              <RichTextEditor
+                value={bodyAr}
+                onChange={setBodyAr}
+                placeholder="اكتب مقالتك هنا…"
                 minHeight={400}
               />
             </F>

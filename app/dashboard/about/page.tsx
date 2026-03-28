@@ -40,6 +40,9 @@ export default function DashboardAboutEditorPage() {
   const [team, setTeam] = useState<AboutTeamContent>(ABOUT_TEAM_DEFAULTS)
   const [values, setValues] = useState<AboutValuesContent>(ABOUT_VALUES_DEFAULTS)
   const [cta, setCta] = useState<CtaContent>(ABOUT_CTA_DEFAULTS)
+
+  const [storyAr, setStoryAr] = useState({ titleAr: '', subtitleAr: '', paragraphsAr: [] as string[] })
+  const [ctaAr, setCtaAr] = useState({ titleAr: '', subtitleAr: '', linkTextAr: '' })
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
@@ -57,10 +60,25 @@ export default function DashboardAboutEditorPage() {
         const items = await res.json()
         const contentMap = toContentMap(items)
 
-        setStory(parseAboutStoryContent(contentMap.get('about_story')))
+        const storyContent = parseAboutStoryContent(contentMap.get('about_story'))
+        const ctaContent = parseCtaContent(contentMap.get('about_cta'), ABOUT_CTA_DEFAULTS)
+
+        setStory(storyContent)
         setTeam(parseAboutTeamContent(contentMap.get('about_team')))
         setValues(parseAboutValuesContent(contentMap.get('about_values')))
-        setCta(parseCtaContent(contentMap.get('about_cta'), ABOUT_CTA_DEFAULTS))
+        setCta(ctaContent)
+
+        setStoryAr({
+          titleAr: (storyContent as any).titleAr ?? '',
+          subtitleAr: (storyContent as any).subtitleAr ?? '',
+          paragraphsAr: (storyContent as any).paragraphsAr ?? [],
+        })
+
+        setCtaAr({
+          titleAr: (ctaContent as any).titleAr ?? '',
+          subtitleAr: (ctaContent as any).subtitleAr ?? '',
+          linkTextAr: (ctaContent as any).linkTextAr ?? '',
+        })
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load about page content.')
       } finally {
@@ -89,10 +107,10 @@ export default function DashboardAboutEditorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
-          toAboutStoryEntry(story),
+          { ...toAboutStoryEntry(story), titleAr: storyAr.titleAr || null, subtitleAr: storyAr.subtitleAr || null, paragraphsAr: storyAr.paragraphsAr.length > 0 ? storyAr.paragraphsAr : null },
           toAboutTeamEntry(team),
           toAboutValuesEntry(values),
-          toCtaEntry('about_cta', cta),
+          { ...toCtaEntry('about_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkTextAr || null },
         ]),
       })
 
@@ -163,6 +181,84 @@ export default function DashboardAboutEditorPage() {
             paragraphs={story.paragraphs}
             onChange={(paragraphs) => setStory((current) => ({ ...current, paragraphs }))}
           />
+        </div>
+      </Section>
+
+      <Section title="About page header and story - Arabic (optional)">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Page title (AR)">
+              <input
+                type="text"
+                value={storyAr.titleAr}
+                onChange={(event) => setStoryAr((current) => ({ ...current, titleAr: event.target.value }))}
+                dir="rtl"
+                lang="ar"
+                className={inputCls}
+                style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+              />
+            </Field>
+            <Field label="Page subtitle (AR)">
+              <input
+                type="text"
+                value={storyAr.subtitleAr}
+                onChange={(event) => setStoryAr((current) => ({ ...current, subtitleAr: event.target.value }))}
+                dir="rtl"
+                lang="ar"
+                className={inputCls}
+                style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+              />
+            </Field>
+          </div>
+
+          <div>
+            <label className="font-sans text-[13px] font-medium text-charcoal mb-3 block">Story paragraphs (AR)</label>
+            <div className="space-y-3">
+              {storyAr.paragraphsAr.map((paragraph, index) => (
+                <div key={`story-ar-${index}`} className="space-y-2">
+                  <textarea
+                    rows={4}
+                    value={paragraph}
+                    onChange={(event) =>
+                      setStoryAr((current) => ({
+                        ...current,
+                        paragraphsAr: current.paragraphsAr.map((item, itemIndex) =>
+                          itemIndex === index ? event.target.value : item
+                        ),
+                      }))
+                    }
+                    dir="rtl"
+                    lang="ar"
+                    className={textAreaCls}
+                    style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStoryAr((current) => ({
+                          ...current,
+                          paragraphsAr: current.paragraphsAr.filter((_, itemIndex) => itemIndex !== index),
+                        }))
+                      }
+                      disabled={storyAr.paragraphsAr.length === 1}
+                      className="font-sans text-[12px] text-taupe hover:text-error bg-transparent border-none cursor-pointer disabled:opacity-40"
+                    >
+                      Remove paragraph
+                    </button>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setStoryAr((current) => ({ ...current, paragraphsAr: [...current.paragraphsAr, ''] }))}
+                className="px-4 py-2 rounded-full font-sans text-[13px] font-medium text-charcoal bg-transparent border border-charcoal hover:bg-light-gray/20 transition-colors"
+                style={{ borderWidth: '0.5px' }}
+              >
+                Add paragraph (AR)
+              </button>
+            </div>
+          </div>
         </div>
       </Section>
 
@@ -317,6 +413,44 @@ export default function DashboardAboutEditorPage() {
               />
             </Field>
           </div>
+        </div>
+      </Section>
+
+      <Section title="Final CTA - Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Headline (AR)">
+            <input
+              type="text"
+              value={ctaAr.titleAr}
+              onChange={(event) => setCtaAr((current) => ({ ...current, titleAr: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Subtitle (AR)">
+            <textarea
+              rows={3}
+              value={ctaAr.subtitleAr}
+              onChange={(event) => setCtaAr((current) => ({ ...current, subtitleAr: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={textAreaCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Button label (AR)">
+            <input
+              type="text"
+              value={ctaAr.linkTextAr}
+              onChange={(event) => setCtaAr((current) => ({ ...current, linkTextAr: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
         </div>
       </Section>
     </div>

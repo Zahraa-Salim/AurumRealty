@@ -4,6 +4,8 @@ import { requireApiPermissions } from '@/lib/api-auth'
 import { prisma } from '@/lib/prisma'
 import { hasAnyPermission } from '@/lib/rbac'
 
+export const runtime = 'nodejs'
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

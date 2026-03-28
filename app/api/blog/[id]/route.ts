@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireApiPermissions } from '@/lib/api-auth'
 
+export const runtime = 'nodejs'
+
 function parseId(id: string) {
   const numericId = Number(id)
   return Number.isInteger(numericId) && numericId > 0 ? numericId : null

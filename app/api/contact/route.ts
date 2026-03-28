@@ -13,6 +13,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireApiPermissions } from '@/lib/api-auth'
 import { hasAnyPermission } from '@/lib/rbac'
+
+export const runtime = 'nodejs'
 import { sendContactNotification } from '@/lib/notifications'
 
 export async function GET() {

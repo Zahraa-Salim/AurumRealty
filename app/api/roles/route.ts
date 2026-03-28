@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requireApiPermissions } from '@/lib/api-auth'
 import { ensureRbacConfigured } from '@/lib/rbac-server'
 
+export const runtime = 'nodejs'
+
 type PermissionSummary = {
   id: number
   key: string

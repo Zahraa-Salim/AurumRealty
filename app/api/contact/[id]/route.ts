@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { requireApiPermissions } from '@/lib/api-auth'
 
+export const runtime = 'nodejs'
+
 // PATCH /api/contact/[id]  — update status
 export async function PATCH(
   req: NextRequest,

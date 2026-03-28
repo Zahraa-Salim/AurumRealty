@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireApiPermissions } from '@/lib/api-auth'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   const auth = await requireApiPermissions(['settings.view', 'pages.edit'])
   if (auth.response) return auth.response

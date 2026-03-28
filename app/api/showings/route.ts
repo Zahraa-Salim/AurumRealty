@@ -15,6 +15,8 @@ import { requireApiPermissions } from '@/lib/api-auth'
 import { hasAnyPermission } from '@/lib/rbac'
 import { sendShowingNotification } from '@/lib/notifications'
 
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   const auth = await requireApiPermissions(['submissions.view', 'submissions.view.own'])
   if (auth.response) return auth.response

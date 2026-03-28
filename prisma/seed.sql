@@ -89,6 +89,62 @@ INSERT INTO "SiteContent" (key, title, "titleAr", subtitle, "subtitleAr", body, 
     NULL,
     NULL,
     NOW()
+  ),
+  (
+    'about_team',
+    'Meet the team',
+    'قابل الفريق',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NOW()
+  ),
+  (
+    'about_values',
+    'Our values',
+    'قيمنا',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NOW()
+  ),
+  (
+    'about_cta',
+    'Ready to begin your property journey?',
+    'هل أنت مستعد لبدء رحلتك العقارية؟',
+    'Let''s explore what''s possible for your real estate goals.',
+    'دعنا نستكشف ما هو ممكن لأهدافك العقارية.',
+    NULL,
+    NULL,
+    NULL,
+    'Get in touch',
+    'تواصل معنا',
+    '/contact',
+    NOW()
+  ),
+  (
+    'home_cta',
+    'Ready to find your next property?',
+    'هل أنت مستعد للعثور على عقارك التالي؟',
+    'Discover premium properties and expert guidance tailored to your goals.',
+    'اكتشف العقارات الممتازة والتوجيه الخبير المصمم لأهدافك.',
+    NULL,
+    NULL,
+    NULL,
+    'Explore now',
+    'اكتشف الآن',
+    '/properties',
+    NOW()
   )
 ON CONFLICT (key) DO UPDATE SET
   title = EXCLUDED.title,
@@ -107,11 +163,12 @@ ON CONFLICT (key) DO UPDATE SET
 -- PROPERTIES
 -- =============================================
 INSERT INTO "Property" (
-  title, price, address, neighbourhood, status, type, bedrooms, bathrooms, area,
-  description, features, images, "agentName", "isPublished", "createdAt", "updatedAt"
+  title, "titleAr", price, address, neighbourhood, status, type, bedrooms, bathrooms, area,
+  description, "descriptionAr", features, "featuresAr", images, "agentName", "isPublished", "createdAt", "updatedAt"
 ) VALUES
   (
     'Penthouse at One Central',
+    'بنتهاوس وان سنترال',
     '$8,500,000',
     '1 Central Avenue, 52nd Floor',
     'Downtown',
@@ -121,7 +178,9 @@ INSERT INTO "Property" (
     4,
     '6,200 sq ft',
     'A trophy penthouse with panoramic skyline views, bespoke finishes and a private rooftop entertaining terrace.',
+    'بنتهاوس فخم بإطلالات بانورامية على خط السماء، وتشطيبات مخصصة وشرفة خاصة على السطح للترفيه.',
     ARRAY['Private rooftop terrace', 'Wine cellar', 'Smart home system', 'Chef''s kitchen'],
+    ARRAY['شرفة خاصة على السطح', 'قبو النبيذ', 'نظام المنزل الذكي', 'مطبخ الشيف'],
     ARRAY[
       'https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=1200&q=80',
       'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80'
@@ -133,6 +192,7 @@ INSERT INTO "Property" (
   ),
   (
     'Riverview Manor',
+    'عقار واجهة النهر',
     '$4,200,000',
     '18 Riverside Crescent',
     'Riverside',
@@ -142,7 +202,9 @@ INSERT INTO "Property" (
     5,
     '7,800 sq ft',
     'A grand family estate overlooking the river with formal entertaining rooms, landscaped grounds and a heated pool.',
+    'عقار عائلي فخم بإطلالات على النهر مع غرف ترفيه رسمية وحدائق مصممة وحمام مدفأ.',
     ARRAY['Heated pool', 'Private garden', 'Library', 'Double garage'],
+    ARRAY['حمام مدفأ', 'حديقة خاصة', 'مكتبة', 'مرآب مزدوج'],
     ARRAY[
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80'
     ],
@@ -153,6 +215,7 @@ INSERT INTO "Property" (
   ),
   (
     'The Glass House',
+    'منزل الزجاج',
     '$6,800,000',
     '9 Hillside Drive',
     'Hillside',
@@ -162,7 +225,9 @@ INSERT INTO "Property" (
     5,
     '8,400 sq ft',
     'A dramatic contemporary villa with an infinity pool, double-height atrium and seamless indoor-outdoor living.',
+    'فيلا معاصرة درامية مع حمام سباحة لا نهائي وفناء مرتفع الارتفاع والمعيشة الداخلية والخارجية بسلاسة.',
     ARRAY['Infinity pool', 'Sauna', 'Underfloor heating', 'Outdoor kitchen'],
+    ARRAY['حمام سباحة لا نهائي', 'حمام بخار', 'تدفئة أرضية', 'مطبخ خارجي'],
     ARRAY[
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=80'
     ],
@@ -173,6 +238,7 @@ INSERT INTO "Property" (
   ),
   (
     'Harbour View Apartment',
+    'شقة إطلالة الميناء',
     '$31,000 / month',
     '280 Harbourfront Boulevard, Apt 28',
     'Harbourfront',
@@ -182,7 +248,9 @@ INSERT INTO "Property" (
     2,
     '2,200 sq ft',
     'A premium waterfront apartment with concierge services, a wraparound terrace and uninterrupted harbour views.',
+    'شقة واجهة مائية متقدمة مع خدمات كونسيرج وشرفة شاملة وإطلالات على الميناء دون انقطاع.',
     ARRAY['Concierge', 'Valet parking', 'Wraparound terrace', 'Residents'' gym'],
+    ARRAY['كونسيرج', 'موقف سيارات فاليت', 'شرفة شاملة', 'صالة رياضية للسكان'],
     ARRAY[
       'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80'
     ],
@@ -193,6 +261,7 @@ INSERT INTO "Property" (
   ),
   (
     'Garden Villa',
+    'فيلا الحديقة',
     '$3,750,000',
     '42 Garden Quarter Lane',
     'Garden Quarter',
@@ -202,7 +271,9 @@ INSERT INTO "Property" (
     4,
     '5,100 sq ft',
     'A serene single-level villa behind private gates with landscaped gardens and a solar-heated pool.',
+    'فيلا هادئة من مستوى واحد خلف بوابات خاصة مع حدائق مصممة وحمام سباحة مدفأ بالطاقة الشمسية.',
     ARRAY['Solar-heated pool', 'Outdoor entertaining', 'Triple garage', 'Solar panels'],
+    ARRAY['حمام سباحة مدفأ بالطاقة الشمسية', 'منطقة ترفيه خارجية', 'مرآب ثلاثي', 'ألواح شمسية'],
     ARRAY[
       'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=1200&q=80'
     ],
@@ -213,6 +284,7 @@ INSERT INTO "Property" (
   ),
   (
     'Prestige Residences',
+    'مجمع بريستيج السكني',
     'From $2,950,000',
     '77 Financial District Plaza',
     'Financial District',
@@ -222,7 +294,9 @@ INSERT INTO "Property" (
     3,
     '2,900 sq ft',
     'A new residential development with concierge, wellness amenities and panoramic city views.',
+    'مشروع سكني جديد مع كونسيرج ومرافق الصحة والعافية وإطلالات بانورامية على المدينة.',
     ARRAY['Residents'' lounge', 'Spa', 'Private cinema', 'Smart access control'],
+    ARRAY['صالة السكان', 'منتجع صحي', 'سينما خاصة', 'نظام تحكم الوصول الذكي'],
     ARRAY[
       'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=1200&q=80'
     ],

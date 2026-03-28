@@ -9,7 +9,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { localise, getLocaleFromCookie, type Locale } from '@/lib/i18n'
+import { localise, getLocaleFromCookie, localiseLabel, STATUS_AR, TYPE_AR, NEIGHBOURHOOD_AR, type Locale } from '@/lib/i18n'
 
 type Property = {
   id:number; title:string; price:string; address:string; neighbourhood:string
@@ -22,7 +22,7 @@ type ModalType = 'showing'|'agent'|null
 type FormState = 'idle'|'submitting'|'success'|'error'
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-function Modal({ type, property, onClose }:{ type:ModalType; property:Property; onClose:()=>void }) {
+function Modal({ type, property, onClose, locale }:{ type:ModalType; property:Property; onClose:()=>void; locale:Locale }) {
   const [visible,setVisible] = useState(false)
   const [state,setState]     = useState<FormState>('idle')
   const [focused,setFocused] = useState<string|null>(null)
@@ -66,7 +66,7 @@ function Modal({ type, property, onClose }:{ type:ModalType; property:Property; 
 
         <div className="flex items-start justify-between px-7 py-6 border-b border-light-gray" style={{borderWidth:'0 0 0.5px 0'}}>
           <div>
-            <h2 className="font-serif text-[22px] text-charcoal">{isShowing?'Schedule a showing':'Contact agent'}</h2>
+            <h2 className="font-serif text-[22px] text-charcoal">{isShowing ? (locale === 'ar' ? 'جدولة معاينة' : 'Schedule a showing') : (locale === 'ar' ? 'تواصل مع الوكيل' : 'Contact agent')}</h2>
             <p className="font-sans text-[13px] text-taupe mt-1 truncate max-w-[280px]">{property.title} — {property.price}</p>
           </div>
           <button onClick={handleClose} className="w-8 h-8 flex items-center justify-center text-taupe hover:text-charcoal transition-colors bg-transparent border-none cursor-pointer flex-shrink-0 mt-1">
@@ -79,62 +79,66 @@ function Modal({ type, property, onClose }:{ type:ModalType; property:Property; 
             <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </div>
-            <h3 className="font-serif text-[22px] text-charcoal mb-3">{isShowing?'Request received':'Message sent'}</h3>
+            <h3 className="font-serif text-[22px] text-charcoal mb-3">{isShowing ? (locale === 'ar' ? 'تم استلام الطلب' : 'Request received') : (locale === 'ar' ? 'تم إرسال الرسالة' : 'Message sent')}</h3>
             <p className="font-sans text-[14px] text-taupe leading-[1.6] mb-6">
-              {isShowing?'Our team will confirm your showing within 24 hours.':`${property.agentName??'Our agent'} will be in touch shortly.`}
+              {isShowing
+                ? (locale === 'ar' ? 'سيتواصل معك فريقنا لتأكيد الموعد خلال 24 ساعة.' : 'Our team will confirm your showing within 24 hours.')
+                : (locale === 'ar' ? `سيتواصل معك ${property.agentName ?? 'وكيلنا'} قريباً.` : `${property.agentName??'Our agent'} will be in touch shortly.`)}
             </p>
-            <button onClick={handleClose} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">Close</button>
+            <button onClick={handleClose} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">{locale === 'ar' ? 'إغلاق' : 'Close'}</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="px-7 py-6 space-y-4">
             {state==='error'&&(
               <div className="p-3 bg-error/5 border border-error/20 rounded-sm" style={{borderWidth:'0.5px'}}>
-                <p className="font-sans text-[13px] text-error">Something went wrong. Please try again.</p>
+                <p className="font-sans text-[13px] text-error">{locale === 'ar' ? 'حدث خطأ ما. يرجى المحاولة مجدداً.' : 'Something went wrong. Please try again.'}</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 flex flex-col gap-1.5">
-                <label className="font-sans text-[12px] font-medium text-charcoal">Full name *</label>
-                <input name="name" required type="text" placeholder="Your name" onFocus={()=>setFocused('name')} onBlur={()=>setFocused(null)} className={ic('name')} style={{borderWidth:focused==='name'?'1px':'0.5px'}}/>
+                <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'الاسم الكامل *' : 'Full name *'}</label>
+                <input name="name" required type="text" placeholder={locale === 'ar' ? 'اسمك' : 'Your name'} onFocus={()=>setFocused('name')} onBlur={()=>setFocused(null)} className={ic('name')} style={{borderWidth:focused==='name'?'1px':'0.5px'}}/>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[12px] font-medium text-charcoal">Email *</label>
+                <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'البريد الإلكتروني *' : 'Email *'}</label>
                 <input name="email" required type="email" placeholder="you@example.com" onFocus={()=>setFocused('email')} onBlur={()=>setFocused(null)} className={ic('email')} style={{borderWidth:focused==='email'?'1px':'0.5px'}}/>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="font-sans text-[12px] font-medium text-charcoal">Phone</label>
+                <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'الهاتف' : 'Phone'}</label>
                 <input name="phone" type="tel" placeholder="+1 555 000 0000" onFocus={()=>setFocused('phone')} onBlur={()=>setFocused(null)} className={ic('phone')} style={{borderWidth:focused==='phone'?'1px':'0.5px'}}/>
               </div>
               {isShowing&&(
                 <>
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-sans text-[12px] font-medium text-charcoal">Preferred date</label>
+                    <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'التاريخ المفضل' : 'Preferred date'}</label>
                     <input name="date" type="date" onFocus={()=>setFocused('date')} onBlur={()=>setFocused(null)} className={ic('date')} style={{borderWidth:focused==='date'?'1px':'0.5px'}}/>
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-sans text-[12px] font-medium text-charcoal">Preferred time</label>
+                    <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'الوقت المفضل' : 'Preferred time'}</label>
                     <select name="time" onFocus={()=>setFocused('time')} onBlur={()=>setFocused(null)} className={`${ic('time')} cursor-pointer`} style={{borderWidth:focused==='time'?'1px':'0.5px'}}>
-                      <option value="">Select time…</option>
+                      <option value="">{locale === 'ar' ? 'اختر الوقت...' : 'Select time…'}</option>
                       {['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'].map(t=><option key={t}>{t}</option>)}
                     </select>
                   </div>
                   <div className="col-span-2 flex flex-col gap-1.5">
-                    <label className="font-sans text-[12px] font-medium text-charcoal">Notes</label>
-                    <textarea name="message" rows={3} placeholder="Any specific areas you'd like to focus on?" onFocus={()=>setFocused('notes')} onBlur={()=>setFocused(null)} className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm placeholder:text-mid-gray placeholder:italic focus:outline-none focus:border-charcoal transition-all resize-none" style={{borderWidth:focused==='notes'?'1px':'0.5px'}}/>
+                    <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'ملاحظات' : 'Notes'}</label>
+                    <textarea name="message" rows={3} placeholder={locale === 'ar' ? 'هل هناك مناطق بعينها تودّ التركيز عليها؟' : "Any specific areas you'd like to focus on?"} onFocus={()=>setFocused('notes')} onBlur={()=>setFocused(null)} className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm placeholder:text-mid-gray placeholder:italic focus:outline-none focus:border-charcoal transition-all resize-none" style={{borderWidth:focused==='notes'?'1px':'0.5px'}}/>
                   </div>
                 </>
               )}
               {!isShowing&&(
                 <div className="col-span-2 flex flex-col gap-1.5">
-                  <label className="font-sans text-[12px] font-medium text-charcoal">Message *</label>
-                  <textarea name="message" required rows={4} placeholder="I'm interested in this property and would like more information…" onFocus={()=>setFocused('message')} onBlur={()=>setFocused(null)} className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm placeholder:text-mid-gray placeholder:italic focus:outline-none focus:border-charcoal transition-all resize-none" style={{borderWidth:focused==='message'?'1px':'0.5px'}}/>
+                  <label className="font-sans text-[12px] font-medium text-charcoal">{locale === 'ar' ? 'الرسالة *' : 'Message *'}</label>
+                  <textarea name="message" required rows={4} placeholder={locale === 'ar' ? 'أرغب في معرفة المزيد عن هذا العقار...' : "I'm interested in this property and would like more information…"} onFocus={()=>setFocused('message')} onBlur={()=>setFocused(null)} className="w-full p-4 font-sans text-[14px] text-charcoal bg-white border border-light-gray rounded-sm placeholder:text-mid-gray placeholder:italic focus:outline-none focus:border-charcoal transition-all resize-none" style={{borderWidth:focused==='message'?'1px':'0.5px'}}/>
                 </div>
               )}
             </div>
             <button type="submit" disabled={state==='submitting'} className="w-full bg-gold hover:bg-gold-dark disabled:opacity-60 text-charcoal font-sans text-[14px] font-medium py-3.5 rounded-full transition-all border-none cursor-pointer">
-              {state==='submitting'?(isShowing?'Sending request…':'Sending message…'):(isShowing?'Request showing':'Send message')}
+              {state==='submitting'
+                ? (isShowing ? (locale === 'ar' ? 'جارٍ الإرسال...' : 'Sending request…') : (locale === 'ar' ? 'جارٍ الإرسال...' : 'Sending message…'))
+                : (isShowing ? (locale === 'ar' ? 'طلب معاينة' : 'Request showing') : (locale === 'ar' ? 'إرسال رسالة' : 'Send message'))}
             </button>
-            <p className="font-sans text-[11px] text-mid-gray text-center">We respond within 24 hours. No spam, ever.</p>
+            <p className="font-sans text-[11px] text-mid-gray text-center">{locale === 'ar' ? 'نرد خلال 24 ساعة. بدون بريد مزعج.' : 'We respond within 24 hours. No spam, ever.'}</p>
           </form>
         )}
       </div>
@@ -188,9 +192,9 @@ export default function PropertyDetailPage() {
   if (missing||!property) return (
     <main className="w-full bg-white min-h-[60vh] flex items-center justify-center">
       <div className="text-center px-4">
-        <p className="font-serif text-[32px] text-charcoal mb-4">Property not found</p>
-        <p className="font-sans text-[15px] text-taupe mb-8">This listing may have been removed or the link is incorrect.</p>
-        <Link href="/properties" className="inline-block bg-gold hover:bg-gold-dark text-charcoal font-sans text-[14px] font-medium px-8 py-3.5 rounded-full transition-colors no-underline">Browse all properties</Link>
+        <p className="font-serif text-[32px] text-charcoal mb-4">{locale === 'ar' ? 'العقار غير موجود' : 'Property not found'}</p>
+        <p className="font-sans text-[15px] text-taupe mb-8">{locale === 'ar' ? 'ربما تم إزالة هذا الإعلان أو الرابط غير صحيح.' : 'This listing may have been removed or the link is incorrect.'}</p>
+        <Link href="/properties" className="inline-block bg-gold hover:bg-gold-dark text-charcoal font-sans text-[14px] font-medium px-8 py-3.5 rounded-full transition-colors no-underline">{locale === 'ar' ? 'تصفح جميع العقارات' : 'Browse all properties'}</Link>
       </div>
     </main>
   )
@@ -204,7 +208,7 @@ export default function PropertyDetailPage() {
       <div className="w-full h-[300px] md:h-[440px] relative overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={images[heroIdx]} alt={property.title} className="w-full h-full object-cover"/>
-        <span className={`absolute top-4 left-4 font-sans text-[12px] font-medium px-3 py-1.5 rounded-sm ${statusBadge[property.status]??'bg-white/90 text-charcoal'}`}>{property.status}</span>
+        <span className={`absolute top-4 left-4 font-sans text-[12px] font-medium px-3 py-1.5 rounded-sm ${statusBadge[property.status]??'bg-white/90 text-charcoal'}`}>{localiseLabel(property.status, STATUS_AR, locale)}</span>
       </div>
 
       {images.length>1&&(
@@ -221,8 +225,8 @@ export default function PropertyDetailPage() {
         <div className="w-full lg:w-[65%]">
           <div className="mb-10">
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{property.type}</span>
-              <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{property.neighbourhood}</span>
+              <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{localiseLabel(property.type, TYPE_AR, locale)}</span>
+              <span className="font-sans text-[12px] text-taupe bg-light-gray/40 px-3 py-1 rounded-sm">{localiseLabel(property.neighbourhood, NEIGHBOURHOOD_AR, locale)}</span>
             </div>
             <h1 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.1] mb-4">{localise(property.title, property.titleAr, locale)}</h1>
             <p className="font-sans text-[26px] font-medium text-gold mb-2">{property.price}</p>
@@ -254,7 +258,7 @@ export default function PropertyDetailPage() {
           <div className="pt-8 border-t border-light-gray" style={{borderWidth:'0.5px 0 0 0'}}>
             <Link href="/properties" className="flex items-center gap-2 font-sans text-[13px] text-taupe hover:text-charcoal no-underline transition-colors w-fit">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-              Back to all properties
+              {locale === 'ar' ? 'العودة إلى العقارات' : 'Back to all properties'}
             </Link>
           </div>
         </div>
@@ -262,16 +266,16 @@ export default function PropertyDetailPage() {
         <div className="w-full lg:w-[35%]">
           <div className="sticky top-[96px] space-y-4">
             <div className="bg-white border border-light-gray rounded-sm p-7" style={{borderWidth:'0.5px'}}>
-              <h2 className="font-serif text-[20px] text-charcoal mb-6">Key details</h2>
+              <h2 className="font-serif text-[20px] text-charcoal mb-6">{locale === 'ar' ? 'التفاصيل الأساسية' : 'Key details'}</h2>
               <div className="space-y-3 mb-8">
                 {[
-                  ['Bedrooms',String(property.bedrooms)],
-                  ['Bathrooms',String(property.bathrooms)],
-                  ['Area',property.area],
-                  ...(property.yearBuilt?[['Year built',property.yearBuilt]]:[]),
-                  ...(property.lotSize?[['Lot size',property.lotSize]]:[]),
-                  ['Type',property.type],
-                  ['Status',property.status],
+                  [locale === 'ar' ? 'غرف النوم' : 'Bedrooms', String(property.bedrooms)],
+                  [locale === 'ar' ? 'الحمامات' : 'Bathrooms', String(property.bathrooms)],
+                  [locale === 'ar' ? 'المساحة' : 'Area', property.area],
+                  ...(property.yearBuilt?[[locale === 'ar' ? 'سنة البناء' : 'Year built', property.yearBuilt]]:[]),
+                  ...(property.lotSize?[[locale === 'ar' ? 'مساحة الأرض' : 'Lot size', property.lotSize]]:[]),
+                  [locale === 'ar' ? 'النوع' : 'Type', localiseLabel(property.type, TYPE_AR, locale)],
+                  [locale === 'ar' ? 'الحالة' : 'Status', localiseLabel(property.status, STATUS_AR, locale)],
                 ].map(([label,value])=>(
                   <div key={label} className="flex justify-between items-center border-b border-light-gray pb-3" style={{borderWidth:'0 0 0.5px 0'}}>
                     <span className="font-sans text-[12px] font-medium text-mid-gray uppercase tracking-wider">{label}</span>
@@ -280,8 +284,8 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
               <div className="flex flex-col gap-3">
-                <button onClick={()=>setModal('showing')} className="w-full bg-gold hover:bg-gold-dark text-charcoal font-sans text-[14px] font-medium py-3.5 rounded-full transition-colors border-none cursor-pointer">Schedule showing</button>
-                <button onClick={()=>setModal('agent')} className="w-full bg-transparent border border-charcoal text-charcoal hover:bg-light-gray/30 font-sans text-[14px] font-medium py-3 rounded-full transition-colors cursor-pointer" style={{borderWidth:'0.5px'}}>Contact agent</button>
+                <button onClick={()=>setModal('showing')} className="w-full bg-gold hover:bg-gold-dark text-charcoal font-sans text-[14px] font-medium py-3.5 rounded-full transition-colors border-none cursor-pointer">{locale === 'ar' ? 'جدولة معاينة' : 'Schedule showing'}</button>
+                <button onClick={()=>setModal('agent')} className="w-full bg-transparent border border-charcoal text-charcoal hover:bg-light-gray/30 font-sans text-[14px] font-medium py-3 rounded-full transition-colors cursor-pointer" style={{borderWidth:'0.5px'}}>{locale === 'ar' ? 'تواصل مع الوكيل' : 'Contact agent'}</button>
               </div>
             </div>
 
@@ -292,8 +296,8 @@ export default function PropertyDetailPage() {
                 </div>
                 <div>
                   <p className="font-serif text-[15px] text-charcoal mb-0.5">{property.agentName}</p>
-                  <p className="font-sans text-[12px] text-taupe mb-2">Listing agent</p>
-                  <button onClick={()=>setModal('agent')} className="font-sans text-[12px] text-charcoal underline hover:text-gold transition-colors bg-transparent border-none cursor-pointer p-0">Send a message</button>
+                  <p className="font-sans text-[12px] text-taupe mb-2">{locale === 'ar' ? 'الوكيل المسؤول' : 'Listing agent'}</p>
+                  <button onClick={()=>setModal('agent')} className="font-sans text-[12px] text-charcoal underline hover:text-gold transition-colors bg-transparent border-none cursor-pointer p-0">{locale === 'ar' ? 'أرسل رسالة' : 'Send a message'}</button>
                 </div>
               </div>
             )}
@@ -301,7 +305,7 @@ export default function PropertyDetailPage() {
         </div>
       </div>
 
-      {modal&&property&&<Modal type={modal} property={property} onClose={()=>setModal(null)}/>}
+      {modal&&property&&<Modal type={modal} property={property} onClose={()=>setModal(null)} locale={locale}/>}
     </main>
   )
 }

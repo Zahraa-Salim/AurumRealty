@@ -11,7 +11,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { BLOG_TOPIC_OPTIONS } from '@/lib/content-options'
-import { localise, type Locale } from '@/lib/i18n'
+import { localise, localiseLabel, localiseReadTime, TOPIC_AR, type Locale } from '@/lib/i18n'
 
 const TOPICS_EN = ['All', ...BLOG_TOPIC_OPTIONS]
 const TOPICS_AR = ['الكل', 'توقعات السوق', 'استثمار', 'رؤى المشترين', 'أدلة']
@@ -67,7 +67,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
             </div>
             <div className="w-full lg:w-[45%]">
               <span className={`inline-block font-sans text-[12px] font-medium px-3 py-1 rounded-full mb-4 ${topicColor[featured.topic] ?? 'bg-cream text-charcoal'}`}>
-                {featured.topic}
+                {localiseLabel(featured.topic, TOPIC_AR, locale)}
               </span>
               <h2 className="font-serif text-[28px] md:text-[34px] text-charcoal leading-[1.2] mb-4 group-hover:text-taupe transition-colors">
                 {localise(featured.title, featured.titleAr, locale)}
@@ -81,7 +81,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
                 <span>{featured.author}</span>
                 <span>·</span>
                 <span>{formatDate(featured.publishedAt)}</span>
-                {featured.readTime && <><span>·</span><span>{featured.readTime}</span></>}
+                {featured.readTime && <><span>·</span><span>{localiseReadTime(featured.readTime, locale)}</span></>}
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
                     className="w-full h-[220px] object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <span className={`absolute bottom-3 left-3 font-sans text-[11px] font-medium px-3 py-1 rounded-full bg-white/90 text-charcoal`}>
-                    {post.topic}
+                    {localiseLabel(post.topic, TOPIC_AR, locale)}
                   </span>
                 </div>
                 <div className="p-5 flex flex-col flex-1">
@@ -150,7 +150,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
                       </div>
                       <span className="font-sans text-[12px] text-charcoal">{post.author}</span>
                     </div>
-                    {post.readTime && <span className="font-sans text-[12px] text-taupe">{post.readTime}</span>}
+                    {post.readTime && <span className="font-sans text-[12px] text-taupe">{localiseReadTime(post.readTime, locale)}</span>}
                   </div>
                 </div>
               </div>

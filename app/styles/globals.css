@@ -320,16 +320,32 @@ button {
 /* Applied when <html dir="rtl" lang="ar"> */
 [dir="rtl"] {
   font-family: var(--font-arabic);
+  font-size: 105%;         /* Arabic glyphs read better slightly larger        */
+  line-height: 1.95;       /* Arabic needs more vertical breathing room        */
 }
 
+/* Headings — bolder & more stylish in Arabic */
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4 {
+  font-family: var(--font-arabic);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+
+/* Serif utility (used for display headings) → map to heavy Cairo */
 [dir="rtl"] .font-serif {
   font-family: var(--font-arabic);
-  font-weight: 400;
+  font-weight: 700;        /* was 400 — much bolder now                        */
   letter-spacing: 0;
 }
 
+/* Body / UI text */
 [dir="rtl"] .font-sans {
   font-family: var(--font-arabic);
+  font-weight: 500;        /* was unset (400) — 500 reads more confidently     */
 }
 
 /* Flip logical padding/margin for RTL layout */

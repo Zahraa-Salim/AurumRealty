@@ -7,7 +7,7 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { localise, getLocaleFromCookie, type Locale } from '@/lib/i18n'
+import { localise, getLocaleFromCookie, localiseLabel, STATUS_AR, TYPE_AR, NEIGHBOURHOOD_AR, type Locale } from '@/lib/i18n'
 
 type Property = {
   id: number; title: string; price: string; neighbourhood: string
@@ -15,7 +15,8 @@ type Property = {
   area: string; images: string[]; titleAr?: string
 }
 const PAGE_SIZE = 9
-const STATUSES  = ['For Sale','For Rent','New Development']
+const STATUSES      = ['For Sale','For Rent','New Development']
+const STATUSES_AR   = ['للبيع','للإيجار','مشروع جديد']
 const BEDROOMS  = ['1','2','3','4','5+']
 const PRICE_RANGES = [
   { label:'Under $2M', min:0,       max:2000000  },
@@ -97,7 +98,7 @@ export default function PropertiesPage() {
     ...filters.types.map(v=>({label:v,clear:()=>{setFilters(f=>({...f,types:f.types.filter(x=>x!==v)}));setPage(1)}})),
     ...filters.statuses.map(v=>({label:v,clear:()=>{setFilters(f=>({...f,statuses:f.statuses.filter(x=>x!==v)}));setPage(1)}})),
     ...filters.locations.map(v=>({label:v,clear:()=>{setFilters(f=>({...f,locations:f.locations.filter(x=>x!==v)}));setPage(1)}})),
-    ...filters.bedrooms.map(v=>({label:`${v} bed`,clear:()=>{setFilters(f=>({...f,bedrooms:f.bedrooms.filter(x=>x!==v)}));setPage(1)}})),
+    ...filters.bedrooms.map(v=>({label:locale === 'ar' ? `${v} غرف` : `${v} bed`,clear:()=>{setFilters(f=>({...f,bedrooms:f.bedrooms.filter(x=>x!==v)}));setPage(1)}})),
     ...(filters.priceRange?[{label:filters.priceRange,clear:()=>{setFilters(f=>({...f,priceRange:null}));setPage(1)}}]:[]),
   ]
 
@@ -105,8 +106,8 @@ export default function PropertiesPage() {
     <main className="w-full bg-white min-h-screen overflow-x-hidden">
       <section className="bg-cream py-16 px-4 md:px-8">
         <div className="max-w-[1200px] mx-auto">
-          <h1 className="font-serif text-[40px] md:text-[48px] text-charcoal leading-[1.1] mb-4">Our properties</h1>
-          <p className="font-sans text-[16px] text-taupe">Browse our exclusive collection of luxury homes</p>
+          <h1 className="font-serif text-[40px] md:text-[48px] text-charcoal leading-[1.1] mb-4">{locale === 'ar' ? 'عقاراتنا' : 'Our properties'}</h1>
+          <p className="font-sans text-[16px] text-taupe">{locale === 'ar' ? 'تصفح مجموعتنا الحصرية من المنازل الفاخرة' : 'Browse our exclusive collection of luxury homes'}</p>
         </div>
       </section>
 
@@ -115,27 +116,31 @@ export default function PropertiesPage() {
           <div className="flex items-center gap-3 py-3">
             <div className="relative flex-1 md:flex-none md:w-[280px] lg:w-[340px]">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-taupe pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input type="text" placeholder="Search by name or location…" value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} className="w-full h-[40px] pl-9 pr-4 font-sans text-[14px] text-charcoal border border-light-gray rounded-sm placeholder:text-taupe placeholder:italic focus:outline-none focus:border-charcoal transition-all duration-200" style={{borderWidth:'0.5px'}} />
+              <input type="text" placeholder={locale === 'ar' ? 'ابحث بالاسم أو الموقع...' : 'Search by name or location…'} value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} className="w-full h-[40px] pl-9 pr-4 font-sans text-[14px] text-charcoal border border-light-gray rounded-sm placeholder:text-taupe placeholder:italic focus:outline-none focus:border-charcoal transition-all duration-200" style={{borderWidth:'0.5px'}} />
             </div>
             <div className="hidden md:flex items-center justify-center flex-1 min-w-0">
-              {['All',...STATUSES].map(s=>(
+              {(['All',...STATUSES] as string[]).map((s,i)=>{
+                const label = i === 0 ? (locale === 'ar' ? 'الكل' : 'All') : localiseLabel(s, STATUS_AR, locale)
+                return (
                 <button key={s} onClick={()=>{setStatusTab(s);setPage(1)}} className={`relative h-[40px] px-4 font-sans text-[13px] whitespace-nowrap flex-shrink-0 transition-colors duration-150 cursor-pointer bg-transparent border-none ${statusTab===s?'text-charcoal font-medium':'text-taupe hover:text-charcoal'}`}>
-                  {s}{statusTab===s&&<span className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal"/>}
+                  {label}{statusTab===s&&<span className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal"/>}
                 </button>
-              ))}
+              )})}
             </div>
             <button onClick={openDrawer} className="flex items-center gap-2 h-[40px] px-5 font-sans text-[13px] font-medium text-charcoal bg-white border border-charcoal rounded-sm hover:bg-light-gray/30 transition-colors cursor-pointer flex-shrink-0 ml-auto md:ml-0" style={{borderWidth:'0.5px'}}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-              Filters
+              {locale === 'ar' ? 'الفلاتر' : 'Filters'}
               {countActive(filters)>0&&<span className="flex items-center justify-center w-[18px] h-[18px] bg-gold text-charcoal font-sans text-[10px] font-medium rounded-full">{countActive(filters)}</span>}
             </button>
           </div>
           <div className="md:hidden flex items-center overflow-x-auto border-t border-light-gray" style={{borderWidth:'0.5px 0 0 0',scrollbarWidth:'none'}}>
-            {['All',...STATUSES].map(s=>(
+            {(['All',...STATUSES] as string[]).map((s,i)=>{
+              const label = i === 0 ? (locale === 'ar' ? 'الكل' : 'All') : localiseLabel(s, STATUS_AR, locale)
+              return (
               <button key={s} onClick={()=>{setStatusTab(s);setPage(1)}} className={`relative h-[40px] px-4 font-sans text-[13px] whitespace-nowrap flex-shrink-0 transition-colors cursor-pointer bg-transparent border-none ${statusTab===s?'text-charcoal font-medium':'text-taupe'}`}>
-                {s}{statusTab===s&&<span className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal"/>}
+                {label}{statusTab===s&&<span className="absolute bottom-0 left-0 right-0 h-[2px] bg-charcoal"/>}
               </button>
-            ))}
+            )})}
           </div>
           {chips.length>0&&(
             <div className="flex flex-wrap items-center gap-2 py-2 border-t border-light-gray" style={{borderWidth:'0.5px 0 0 0'}}>
@@ -144,7 +149,7 @@ export default function PropertiesPage() {
                   {c.label}<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>
               ))}
-              <button onClick={clearAll} className="font-sans text-[12px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer ml-1">Clear all</button>
+              <button onClick={clearAll} className="font-sans text-[12px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer ml-1">{locale === 'ar' ? 'مسح الكل' : 'Clear all'}</button>
             </div>
           )}
         </div>
@@ -163,14 +168,14 @@ export default function PropertiesPage() {
         )}
         {error&&(
           <div className="text-center py-24">
-            <p className="font-serif text-[24px] text-charcoal mb-3">Unable to load properties</p>
-            <p className="font-sans text-[14px] text-taupe mb-6">Please check your connection and try again.</p>
-            <button onClick={()=>window.location.reload()} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">Retry</button>
+            <p className="font-serif text-[24px] text-charcoal mb-3">{locale === 'ar' ? 'تعذّر تحميل العقارات' : 'Unable to load properties'}</p>
+            <p className="font-sans text-[14px] text-taupe mb-6">{locale === 'ar' ? 'يرجى التحقق من اتصالك والمحاولة مجدداً.' : 'Please check your connection and try again.'}</p>
+            <button onClick={()=>window.location.reload()} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">{locale === 'ar' ? 'إعادة المحاولة' : 'Retry'}</button>
           </div>
         )}
         {!loading&&!error&&(
           <>
-            <p className="font-sans text-[13px] text-taupe mb-6">{filtered.length} {filtered.length===1?'property':'properties'}</p>
+            <p className="font-sans text-[13px] text-taupe mb-6">{filtered.length} {locale === 'ar' ? 'عقار' : (filtered.length===1?'property':'properties')}</p>
             {paginated.length>0?(
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -180,14 +185,14 @@ export default function PropertiesPage() {
                         <div className="relative overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={p.images[0]??'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80'} alt={p.title} className="w-full h-[240px] object-cover transition-transform duration-500 group-hover:scale-105"/>
-                          <span className={`absolute top-3 left-3 font-sans text-[11px] font-medium px-2.5 py-1 rounded-sm ${statusBadge[p.status]??'bg-white/90 text-charcoal'}`}>{p.status}</span>
-                          <span className="absolute top-3 right-3 font-sans text-[11px] text-taupe bg-white/90 px-2.5 py-1 rounded-sm">{p.type}</span>
+                          <span className={`absolute top-3 left-3 font-sans text-[11px] font-medium px-2.5 py-1 rounded-sm ${statusBadge[p.status]??'bg-white/90 text-charcoal'}`}>{localiseLabel(p.status, STATUS_AR, locale)}</span>
+                          <span className="absolute top-3 right-3 font-sans text-[11px] text-taupe bg-white/90 px-2.5 py-1 rounded-sm">{localiseLabel(p.type, TYPE_AR, locale)}</span>
                         </div>
                         <div className="p-5">
                           <h3 className="font-serif text-[18px] text-charcoal mb-2">{localise(p.title, p.titleAr, locale)}</h3>
                           <p className="font-sans text-[16px] font-medium text-gold mb-3">{p.price}</p>
-                          <p className="font-sans text-[13px] text-taupe mb-1">{p.bedrooms} bed · {p.bathrooms} bath · {p.area}</p>
-                          <p className="font-sans text-[12px] text-mid-gray italic">{p.neighbourhood}</p>
+                          <p className="font-sans text-[13px] text-taupe mb-1">{p.bedrooms} {locale === 'ar' ? 'غرف' : 'bed'} · {p.bathrooms} {locale === 'ar' ? 'حمام' : 'bath'} · {p.area}</p>
+                          <p className="font-sans text-[12px] text-mid-gray italic">{localiseLabel(p.neighbourhood, NEIGHBOURHOOD_AR, locale)}</p>
                         </div>
                       </div>
                     </Link>
@@ -212,9 +217,9 @@ export default function PropertiesPage() {
               </>
             ):(
               <div className="text-center py-24">
-                <p className="font-serif text-[24px] text-charcoal mb-3">No properties found</p>
-                <p className="font-sans text-[14px] text-taupe mb-6">Try adjusting your search or clearing some filters.</p>
-                <button onClick={clearAll} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">Clear all filters</button>
+                <p className="font-serif text-[24px] text-charcoal mb-3">{locale === 'ar' ? 'لا توجد عقارات' : 'No properties found'}</p>
+                <p className="font-sans text-[14px] text-taupe mb-6">{locale === 'ar' ? 'جرب تعديل البحث أو إزالة بعض الفلاتر.' : 'Try adjusting your search or clearing some filters.'}</p>
+                <button onClick={clearAll} className="font-sans text-[13px] font-medium text-charcoal underline bg-transparent border-none cursor-pointer">{locale === 'ar' ? 'مسح جميع الفلاتر' : 'Clear all filters'}</button>
               </div>
             )}
           </>
@@ -225,17 +230,17 @@ export default function PropertiesPage() {
         <div className="fixed inset-0 z-50 transition-all duration-300" style={{backdropFilter:visible?'blur(4px)':'blur(0px)',WebkitBackdropFilter:visible?'blur(4px)':'blur(0px)',backgroundColor:visible?'rgba(31,31,31,0.3)':'rgba(31,31,31,0)'}}>
           <div ref={drawerRef} className="absolute top-0 right-0 h-full bg-white flex flex-col" style={{width:'min(400px,92vw)',transform:visible?'translateX(0)':'translateX(100%)',transition:'transform 0.3s cubic-bezier(0.4,0,0.2,1)',boxShadow:'-8px 0 40px rgba(0,0,0,0.1)'}}>
             <div className="flex items-center justify-between px-6 py-5 border-b border-light-gray flex-shrink-0" style={{borderWidth:'0 0 0.5px 0'}}>
-              <h2 className="font-serif text-[20px] text-charcoal">Filter properties</h2>
+              <h2 className="font-serif text-[20px] text-charcoal">{locale === 'ar' ? 'فلترة العقارات' : 'Filter properties'}</h2>
               <button onClick={closeDrawer} className="w-8 h-8 flex items-center justify-center text-taupe hover:text-charcoal transition-colors bg-transparent border-none cursor-pointer">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-7">
-              <DS title="Status">{STATUSES.map(s=><PT key={s} label={s} active={draft.statuses.includes(s)} onClick={()=>setDraft(d=>({...d,statuses:toggle(d.statuses,s)}))}/>)}</DS>
-              <DS title="Property type">{TYPES.map(t=><PT key={t} label={t} active={draft.types.includes(t)} onClick={()=>setDraft(d=>({...d,types:toggle(d.types,t)}))}/>)}</DS>
-              <DS title="Price range">{PRICE_RANGES.map(r=><PT key={r.label} label={r.label} active={draft.priceRange===r.label} onClick={()=>setDraft(d=>({...d,priceRange:d.priceRange===r.label?null:r.label}))}/>)}</DS>
-              <DS title="Bedrooms">{BEDROOMS.map(b=><PT key={b} label={b} active={draft.bedrooms.includes(b)} onClick={()=>setDraft(d=>({...d,bedrooms:toggle(d.bedrooms,b)}))}/>)}</DS>
-              <DS title="Neighbourhood">
+              <DS title={locale === 'ar' ? 'الحالة' : 'Status'}>{STATUSES.map(s=><PT key={s} label={localiseLabel(s, STATUS_AR, locale)} active={draft.statuses.includes(s)} onClick={()=>setDraft(d=>({...d,statuses:toggle(d.statuses,s)}))}/>)}</DS>
+              <DS title={locale === 'ar' ? 'نوع العقار' : 'Property type'}>{TYPES.map(t=><PT key={t} label={localiseLabel(t, TYPE_AR, locale)} active={draft.types.includes(t)} onClick={()=>setDraft(d=>({...d,types:toggle(d.types,t)}))}/>)}</DS>
+              <DS title={locale === 'ar' ? 'نطاق السعر' : 'Price range'}>{PRICE_RANGES.map(r=><PT key={r.label} label={r.label} active={draft.priceRange===r.label} onClick={()=>setDraft(d=>({...d,priceRange:d.priceRange===r.label?null:r.label}))}/>)}</DS>
+              <DS title={locale === 'ar' ? 'غرف النوم' : 'Bedrooms'}>{BEDROOMS.map(b=><PT key={b} label={b} active={draft.bedrooms.includes(b)} onClick={()=>setDraft(d=>({...d,bedrooms:toggle(d.bedrooms,b)}))}/>)}</DS>
+              <DS title={locale === 'ar' ? 'الحي' : 'Neighbourhood'}>
                 <div className="w-full space-y-3">
                   {LOCATIONS.map(loc=>{
                     const checked=draft.locations.includes(loc)
@@ -244,7 +249,7 @@ export default function PropertiesPage() {
                         <span className={`w-[18px] h-[18px] flex-shrink-0 rounded-sm border flex items-center justify-center transition-colors ${checked?'bg-charcoal border-charcoal':'bg-white border-light-gray'}`} style={{borderWidth:'0.5px'}}>
                           {checked&&<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 6l3 3 5-5"/></svg>}
                         </span>
-                        <span className="font-sans text-[14px] text-charcoal select-none">{loc}</span>
+                        <span className="font-sans text-[14px] text-charcoal select-none">{localiseLabel(loc, NEIGHBOURHOOD_AR, locale)}</span>
                       </label>
                     )
                   })}
@@ -252,8 +257,8 @@ export default function PropertiesPage() {
               </DS>
             </div>
             <div className="px-6 py-5 border-t border-light-gray flex gap-3 flex-shrink-0" style={{borderWidth:'0.5px 0 0 0'}}>
-              <button onClick={()=>setDraft(EMPTY)} className="flex-1 h-[44px] font-sans text-[14px] font-medium text-charcoal bg-white border border-charcoal rounded-sm hover:bg-light-gray/20 transition-colors cursor-pointer" style={{borderWidth:'0.5px'}}>Reset</button>
-              <button onClick={applyDraft} className="flex-1 h-[44px] font-sans text-[14px] font-medium text-charcoal bg-gold hover:bg-gold-dark rounded-sm transition-colors border-none cursor-pointer">Show {draftResult.length} {draftResult.length===1?'property':'properties'}</button>
+              <button onClick={()=>setDraft(EMPTY)} className="flex-1 h-[44px] font-sans text-[14px] font-medium text-charcoal bg-white border border-charcoal rounded-sm hover:bg-light-gray/20 transition-colors cursor-pointer" style={{borderWidth:'0.5px'}}>{locale === 'ar' ? 'إعادة تعيين' : 'Reset'}</button>
+              <button onClick={applyDraft} className="flex-1 h-[44px] font-sans text-[14px] font-medium text-charcoal bg-gold hover:bg-gold-dark rounded-sm transition-colors border-none cursor-pointer">{locale === 'ar' ? `عرض ${draftResult.length} عقار` : `Show ${draftResult.length} ${draftResult.length===1?'property':'properties'}`}</button>
             </div>
           </div>
         </div>

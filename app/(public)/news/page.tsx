@@ -8,7 +8,7 @@ import Link from 'next/link'
 import type { NewsArticle } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { getServerLocale } from '@/lib/locale-server'
-import { localise, type Locale } from '@/lib/i18n'
+import { localise, localiseLabel, CATEGORY_AR, type Locale } from '@/lib/i18n'
 
 const categoryColors: Record<string, string> = {
   'Company news':    'bg-charcoal text-white',
@@ -22,7 +22,7 @@ export const revalidate = 60 // revalidate every 60 seconds
 
 type NewsListItem = Pick<
   NewsArticle,
-  'id' | 'slug' | 'title' | 'titleAr' | 'category' | 'heroImage' | 'summary' | 'author' | 'publishedAt'
+  'id' | 'slug' | 'title' | 'titleAr' | 'category' | 'heroImage' | 'summary' | 'summaryAr' | 'author' | 'publishedAt'
 >
 
 export default async function NewsPage() {
@@ -41,6 +41,7 @@ export default async function NewsPage() {
         category: true,
         heroImage: true,
         summary: true,
+        summaryAr: true,
         author: true,
         publishedAt: true,
       },
@@ -89,11 +90,11 @@ export default async function NewsPage() {
                       className="w-full h-[320px] object-cover transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="w-full md:w-1/2">
-                    <span className={`inline-block font-sans text-[12px] font-medium px-3 py-1 rounded-full mb-4 ${categoryColors[featured.category] ?? 'bg-cream text-charcoal'}`}>{featured.category}</span>
+                    <span className={`inline-block font-sans text-[12px] font-medium px-3 py-1 rounded-full mb-4 ${categoryColors[featured.category] ?? 'bg-cream text-charcoal'}`}>{localiseLabel(featured.category, CATEGORY_AR, locale)}</span>
                     <h2 className="font-serif text-[28px] md:text-[32px] text-charcoal leading-[1.2] mb-4 group-hover:text-taupe transition-colors">
                       {localise(featured.title, featured.titleAr, locale)}
                     </h2>
-                    <p className="font-sans text-[15px] text-taupe leading-[1.7] mb-5">{featured.summary}</p>
+                    <p className="font-sans text-[15px] text-taupe leading-[1.7] mb-5">{localise(featured.summary, featured.summaryAr, locale)}</p>
                     <p className="font-sans text-[13px] text-mid-gray">
                       {featured.author} · {featured.publishedAt ? new Date(featured.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year:'numeric', month:'long', day:'numeric' }) : ''}
                     </p>
@@ -113,11 +114,11 @@ export default async function NewsPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={item.heroImage ?? 'https://images.unsplash.com/photo-1449844908441-8829872d2607?w=800&q=80'} alt={item.title} className="w-full h-[200px] object-cover" />
                       <div className="p-5 flex flex-col flex-1">
-                        <span className={`inline-block font-sans text-[11px] font-medium px-2.5 py-1 rounded-full mb-3 ${categoryColors[item.category] ?? 'bg-cream text-charcoal'}`}>{item.category}</span>
+                        <span className={`inline-block font-sans text-[11px] font-medium px-2.5 py-1 rounded-full mb-3 ${categoryColors[item.category] ?? 'bg-cream text-charcoal'}`}>{localiseLabel(item.category, CATEGORY_AR, locale)}</span>
                         <h3 className="font-serif text-[18px] text-charcoal leading-[1.3] mb-3 flex-1">
                           {localise(item.title, item.titleAr, locale)}
                         </h3>
-                        <p className="font-sans text-[13px] text-taupe line-clamp-2 mb-4">{item.summary}</p>
+                        <p className="font-sans text-[13px] text-taupe line-clamp-2 mb-4">{localise(item.summary, item.summaryAr, locale)}</p>
                         <p className="font-sans text-[12px] text-mid-gray">
                           {item.author} · {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { month:'long', day:'numeric', year:'numeric' }) : ''}
                         </p>

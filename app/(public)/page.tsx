@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma'
 import { HomeParallaxImage } from '@/components/HomeParallaxImage'
 import { HomeStatsBar } from '@/components/HomeStatsBar'
 import { getServerLocale } from '@/lib/locale-server'
-import { localise } from '@/lib/i18n'
+import { localise, localiseLabel, STATUS_AR, NEIGHBOURHOOD_AR } from '@/lib/i18n'
 import {
   HOME_SERVICES_DEFAULTS,
   SERVICE_SECTION_DEFAULTS,
@@ -193,7 +193,7 @@ export default async function HomePage() {
 
         {/* Scroll-down indicator */}
         <div className="scroll-indicator-wrap absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1">
-          <span className="font-sans text-[11px] uppercase tracking-widest text-white/60">Scroll</span>
+          <span className="font-sans text-[11px] uppercase tracking-widest text-white/60">{locale === 'ar' ? 'مرر' : 'Scroll'}</span>
           <div className="scroll-indicator">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{opacity:0.7}}>
               <polyline points="6 9 12 15 18 9"/>
@@ -208,8 +208,8 @@ export default async function HomePage() {
       {/* ── FEATURED PROPERTIES ── */}
       <section className="py-16 md:py-24 px-4 md:px-8 max-w-[1200px] mx-auto">
         <div className="mb-10">
-          <h2 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.15] mb-2">Featured properties</h2>
-          <p className="font-sans text-[14px] text-taupe">Exceptional homes curated for discerning buyers</p>
+          <h2 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.15] mb-2">{locale === 'ar' ? 'عقارات مميزة' : 'Featured properties'}</h2>
+          <p className="font-sans text-[14px] text-taupe">{locale === 'ar' ? 'منازل استثنائية مختارة لأصحاب الذوق الرفيع' : 'Exceptional homes curated for discerning buyers'}</p>
         </div>
         {featured.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
@@ -224,20 +224,20 @@ export default async function HomePage() {
                       className="w-full h-[280px] object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <span className={`absolute top-3 left-3 font-sans text-[11px] font-medium px-2.5 py-1 rounded-sm ${statusBadge[p.status] ?? 'bg-white/90 text-charcoal'}`}>
-                      {p.status}
+                      {localiseLabel(p.status, STATUS_AR, locale)}
                     </span>
                     {/* "View property" overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{background:'rgba(31,31,31,0.18)'}}>
                       <span className="font-sans text-[13px] font-medium text-white bg-charcoal/70 px-5 py-2.5 rounded-full backdrop-blur-sm">
-                        View property →
+                        {locale === 'ar' ? 'عرض العقار ←' : 'View property →'}
                       </span>
                     </div>
                   </div>
                   <div className="p-5 relative">
                     <h3 className="font-serif text-[18px] text-charcoal mb-2">{localise(p.title, (p as any).titleAr, locale)}</h3>
                     <p className="font-sans text-[16px] font-medium text-gold mb-3">{p.price}</p>
-                    <p className="font-sans text-[13px] text-taupe">{p.bedrooms} bed · {p.bathrooms} bath · {p.area}</p>
-                    <p className="font-sans text-[12px] text-mid-gray italic mt-1">{p.neighbourhood}</p>
+                    <p className="font-sans text-[13px] text-taupe">{p.bedrooms} {locale === 'ar' ? 'غرف' : 'bed'} · {p.bathrooms} {locale === 'ar' ? 'حمام' : 'bath'} · {p.area}</p>
+                    <p className="font-sans text-[12px] text-mid-gray italic mt-1">{localiseLabel(p.neighbourhood, NEIGHBOURHOOD_AR, locale)}</p>
                     {/* Gold bottom border slide-in */}
                     <div className="property-card-gold-bar absolute bottom-0 left-0 right-0 h-[2px] bg-gold" />
                   </div>
@@ -246,11 +246,11 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <p className="font-sans text-[14px] text-taupe mb-12">No properties available yet.</p>
+          <p className="font-sans text-[14px] text-taupe mb-12">{locale === 'ar' ? 'لا توجد عقارات متاحة بعد.' : 'No properties available yet.'}</p>
         )}
         <div className="text-center">
           <Link href="/properties" className="inline-block border border-charcoal text-charcoal font-sans text-[14px] font-medium px-8 py-3 rounded-full hover:bg-charcoal hover:text-white transition-colors duration-200 no-underline" style={{borderWidth:'0.5px'}}>
-            View all properties
+            {locale === 'ar' ? 'تصفح جميع العقارات' : 'View all properties'}
           </Link>
         </div>
       </section>
@@ -271,7 +271,7 @@ export default async function HomePage() {
                 <h3 className="font-serif text-[20px] text-charcoal mb-4">{service.title}</h3>
                 <p className="font-sans text-[14px] text-taupe leading-[1.7] mb-5">{service.paragraphs[0] ?? HOME_SERVICES_DEFAULTS.subtitle}</p>
                 <Link href="/services" className="font-sans text-[13px] font-medium text-charcoal hover:text-gold transition-colors no-underline underline underline-offset-2">
-                  Learn more
+                  {locale === 'ar' ? 'اعرف أكثر' : 'Learn more'}
                 </Link>
               </div>
             ))}

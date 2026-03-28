@@ -57,3 +57,75 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   en: 'EN',
   ar: 'AR',
 }
+
+// ── Lookup maps for DB-stored English enum values ─────────────────────────────
+
+/** Property status → Arabic */
+export const STATUS_AR: Record<string, string> = {
+  'For Sale':        'للبيع',
+  'For Rent':        'للإيجار',
+  'New Development': 'مشروع جديد',
+}
+
+/** Property type → Arabic */
+export const TYPE_AR: Record<string, string> = {
+  'Penthouse': 'بنتهاوس',
+  'Estate':    'قصر',
+  'Villa':     'فيلا',
+  'Apartment': 'شقة',
+  'Townhouse': 'تاون هاوس',
+}
+
+/** Neighbourhood name → Arabic */
+export const NEIGHBOURHOOD_AR: Record<string, string> = {
+  'Downtown':          'وسط المدينة',
+  'Riverside':         'واجهة النهر',
+  'Hillside':          'المنحدر',
+  'Harbourfront':      'واجهة الميناء',
+  'Garden Quarter':    'حي الحدائق',
+  'Financial District':'الحي المالي',
+}
+
+/** Blog topic → Arabic */
+export const TOPIC_AR: Record<string, string> = {
+  'Market outlook': 'توقعات السوق',
+  'Investment':     'الاستثمار',
+  'Buyer insight':  'رؤى المشترين',
+  'Guides':         'أدلة',
+}
+
+/** News category → Arabic */
+export const CATEGORY_AR: Record<string, string> = {
+  'Company news':    'أخبار الشركة',
+  'Market update':   'تحديث السوق',
+  'Awards':          'جوائز',
+  'Industry insight':'رؤى الصناعة',
+  'Transaction':     'صفقة',
+}
+
+/** Author role → Arabic */
+export const AUTHOR_ROLE_AR: Record<string, string> = {
+  'Sarah Johnson': 'المدير العام',
+  'Michael Chen':  'وكيل أول',
+  'Emily Brooks':  'متخصص استثمار',
+}
+
+/**
+ * Translate a value using a lookup map when locale is Arabic.
+ * Falls back to the original value if no translation exists.
+ */
+export function localiseLabel(value: string, map: Record<string, string>, locale: Locale): string {
+  if (locale !== 'ar') return value
+  return map[value] ?? value
+}
+
+/**
+ * Translate a readTime string like "6 min read" → "٦ دقائق قراءة".
+ * Returns the original if locale is English or format doesn't match.
+ */
+export function localiseReadTime(readTime: string | null | undefined, locale: Locale): string | null {
+  if (!readTime || locale !== 'ar') return readTime ?? null
+  const match = readTime.match(/(\d+)/)
+  if (!match) return readTime
+  return `${match[1]} دقائق قراءة`
+}

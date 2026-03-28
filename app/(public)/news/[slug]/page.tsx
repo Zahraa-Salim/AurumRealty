@@ -10,7 +10,7 @@ import type { NewsArticle } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getServerLocale } from '@/lib/locale-server'
-import { localise } from '@/lib/i18n'
+import { localise, localiseLabel, CATEGORY_AR } from '@/lib/i18n'
 
 export const revalidate = 60
 
@@ -103,7 +103,7 @@ export default async function NewsDetailPage({
               'bg-cream text-charcoal'
             }`}
           >
-            {article.category}
+            {localiseLabel(article.category, CATEGORY_AR, locale)}
           </span>
 
           <h1 className="font-serif text-[28px] md:text-[40px] text-white leading-[1.2]">
@@ -156,7 +156,7 @@ export default async function NewsDetailPage({
             href="/contact"
             className="inline-flex items-center gap-2 font-sans text-[14px] font-medium text-charcoal hover:text-taupe transition-colors no-underline"
           >
-            Contact our team
+            {locale === 'ar' ? 'تواصل مع فريقنا' : 'Contact our team'}
             <svg
               width="16"
               height="16"
@@ -180,7 +180,7 @@ export default async function NewsDetailPage({
           style={{ borderWidth: '0.5px 0 0 0' }}
         >
           <h2 className="font-serif text-[24px] text-charcoal mb-8">
-            More news
+            {locale === 'ar' ? 'المزيد من الأخبار' : 'More news'}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -208,7 +208,7 @@ export default async function NewsDetailPage({
                     'bg-cream text-charcoal'
                   }`}
                 >
-                  {r.category}
+                  {localiseLabel(r.category, CATEGORY_AR, locale)}
                 </span>
 
                 <h3 className="font-serif text-[16px] text-charcoal leading-[1.3] group-hover:text-taupe transition-colors">

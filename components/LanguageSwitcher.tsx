@@ -36,9 +36,9 @@ export function LanguageSwitcher() {
         onClick={() => switchTo('ar')}
         className={locale === 'ar' ? 'active' : ''}
         aria-pressed={locale === 'ar'}
-        style={{ fontFamily: 'var(--font-arabic)' }}
+        style={{ fontFamily: 'var(--font-arabic)', fontWeight: 600 }}
       >
-        AR
+        ع
       </button>
     </div>
   )

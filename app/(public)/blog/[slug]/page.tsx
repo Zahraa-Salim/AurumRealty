@@ -10,7 +10,7 @@ import type { BlogPost } from '@prisma/client'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getServerLocale } from '@/lib/locale-server'
-import { localise } from '@/lib/i18n'
+import { localise, localiseLabel, localiseReadTime, TOPIC_AR, AUTHOR_ROLE_AR } from '@/lib/i18n'
 
 export const revalidate = 60
 
@@ -21,6 +21,9 @@ type RelatedBlogPost = Pick<
 
 const authorRole: Record<string,string> = {
   'Sarah Johnson':'Managing Director','Michael Chen':'Senior Agent','Emily Brooks':'Investment Specialist',
+}
+const authorRoleAr: Record<string,string> = {
+  'Sarah Johnson':'المدير العام','Michael Chen':'وكيل أول','Emily Brooks':'متخصص استثمار',
 }
 // Inline styles used instead of Tailwind color utilities (blue-50, amber-50 etc.)
 // because those classes aren't in the custom theme and get purged in production.
@@ -97,7 +100,7 @@ export default async function BlogPostPage({
             {locale === 'ar' ? '→ المجلة' : '← Journal'}
           </Link>
           <span className="text-light-gray">·</span>
-          <span className="font-sans text-[12px] font-medium px-3 py-1 rounded-full" style={topicColor[post.topic] ?? { bg: '#F5E6D3', color: '#1F1F1F' }}>{post.topic}</span>
+          <span className="font-sans text-[12px] font-medium px-3 py-1 rounded-full" style={topicColor[post.topic] ?? { bg: '#F5E6D3', color: '#1F1F1F' }}>{localiseLabel(post.topic, TOPIC_AR, locale)}</span>
         </div>
         <h1 className="font-serif text-[32px] md:text-[44px] text-charcoal leading-[1.15] mb-5">{title}</h1>
         {subtitle && <p className="font-sans text-[17px] text-taupe leading-[1.7] mb-8 border-l-[3px] border-gold pl-5 italic">{subtitle}</p>}
@@ -107,11 +110,11 @@ export default async function BlogPostPage({
           </div>
           <div>
             <p className="font-sans text-[14px] font-medium text-charcoal">{post.author}</p>
-            <p className="font-sans text-[12px] text-taupe">{authorRole[post.author]??'Aurum Realty'}</p>
+            <p className="font-sans text-[12px] text-taupe">{locale === 'ar' ? (authorRoleAr[post.author] ?? 'أوروم ريالتي') : (authorRole[post.author]??'Aurum Realty')}</p>
           </div>
           <div className="ml-auto text-right">
             <p className="font-sans text-[13px] text-taupe">{fmt(post.publishedAt)}</p>
-            {post.readTime&&<p className="font-sans text-[12px] text-mid-gray">{post.readTime}</p>}
+            {post.readTime&&<p className="font-sans text-[12px] text-mid-gray">{localiseReadTime(post.readTime, locale)}</p>}
           </div>
         </div>
         <div className="article-body" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
@@ -126,7 +129,7 @@ export default async function BlogPostPage({
           </div>
           <div>
             <p className="font-sans text-[15px] font-medium text-charcoal mb-1">{post.author}</p>
-            <p className="font-sans text-[13px] text-taupe mb-3">{authorRole[post.author]??'Aurum Realty'}</p>
+            <p className="font-sans text-[13px] text-taupe mb-3">{locale === 'ar' ? (authorRoleAr[post.author] ?? 'أوروم ريالتي') : (authorRole[post.author]??'Aurum Realty')}</p>
             <Link href="/contact" className="font-sans text-[13px] font-medium text-charcoal underline hover:text-taupe transition-colors">
               {locale === 'ar' ? 'تواصل معنا →' : 'Get in touch →'}
             </Link>
@@ -146,9 +149,9 @@ export default async function BlogPostPage({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={r.heroImage??'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'} alt={r.title} className="w-full h-[180px] object-cover transition-transform duration-500 group-hover:scale-105"/>
                 </div>
-                <span className="inline-block font-sans text-[11px] font-medium px-2.5 py-1 rounded-full mb-2" style={topicColor[r.topic] ?? { bg: '#F5E6D3', color: '#1F1F1F' }}>{r.topic}</span>
+                <span className="inline-block font-sans text-[11px] font-medium px-2.5 py-1 rounded-full mb-2" style={topicColor[r.topic] ?? { bg: '#F5E6D3', color: '#1F1F1F' }}>{localiseLabel(r.topic, TOPIC_AR, locale)}</span>
                 <h3 className="font-serif text-[17px] text-charcoal leading-[1.3] group-hover:text-taupe transition-colors">{localise(r.title, (r as any).titleAr, locale)}</h3>
-                <p className="font-sans text-[12px] text-taupe mt-2">{r.author}{r.readTime?` · ${r.readTime}`:''}</p>
+                <p className="font-sans text-[12px] text-taupe mt-2">{r.author}{r.readTime?` · ${localiseReadTime(r.readTime, locale)}`:''}</p>
               </Link>
             ))}
           </div>

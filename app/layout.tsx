@@ -10,20 +10,28 @@ import { cookies } from 'next/headers'
 import './styles/globals.css'
 import { AuthSessionProvider } from '@/components/AuthSessionProvider'
 
-export const metadata: Metadata = {
-  title: {
-    default: 'Aurum Realty',
-    template: '%s | Aurum Realty',
-  },
-  description: 'Luxury properties for discerning buyers. Founded 2010.',
-  icons: {
-    icon: [
-      { url: '/favicon.ico',  sizes: '32x32', type: 'image/x-icon' },
-      { url: '/icon.svg',     type: 'image/svg+xml' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies()
+  const locale = cookieStore.get('locale')?.value === 'ar' ? 'ar' : 'en'
+  const isAr = locale === 'ar'
+
+  return {
+    title: {
+      default: 'Aurum Realty',
+      template: '%s | Aurum Realty',
+    },
+    description: 'Luxury properties for discerning buyers. Founded 2010.',
+    icons: {
+      icon: [
+        isAr
+          ? { url: '/favicon-ar.svg', type: 'image/svg+xml' }
+          : { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+        { url: isAr ? '/favicon-ar.svg' : '/icon.svg', type: 'image/svg+xml' },
+      ],
+      shortcut: isAr ? '/favicon-ar.svg' : '/favicon.ico',
+      apple:    isAr ? '/favicon-ar.svg' : '/favicon.ico',
+    },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale}>
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
           crossOrigin="anonymous"
         />

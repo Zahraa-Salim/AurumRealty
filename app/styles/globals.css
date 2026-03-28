@@ -314,7 +314,7 @@ button {
 
 
 :root {
-  --font-arabic: 'IBM Plex Arabic', 'Noto Kufi Arabic', 'Arial', sans-serif;
+  --font-arabic: 'Cairo', 'Noto Kufi Arabic', 'Arial', sans-serif;
 }
 
 /* Applied when <html dir="rtl" lang="ar"> */

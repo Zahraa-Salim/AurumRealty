@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale}>
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Arabic&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
           rel="stylesheet"
           crossOrigin="anonymous"
         />

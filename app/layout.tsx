@@ -23,10 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: 'Luxury properties for discerning buyers. Founded 2010.',
     icons: {
       icon: [
-        isAr
-          ? { url: '/favicon-ar.svg', type: 'image/svg+xml' }
-          : { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
-        { url: isAr ? '/favicon-ar.svg' : '/icon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+        { url:'/icon.svg', type: 'image/svg+xml' },
       ],
       shortcut: isAr ? '/favicon-ar.svg' : '/favicon.ico',
       apple:    isAr ? '/favicon-ar.svg' : '/favicon.ico',

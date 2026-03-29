@@ -107,7 +107,7 @@ export default async function ServicesPage() {
         )
       })}
 
-      <section className="py-16 md:py-24 px-4 md:px-8 text-center">
+      <section className="py-8 md:py-12 bg-cream px-4 md:px-8 text-center">
         <div className="max-w-[600px] mx-auto">
           <h2 className="font-serif text-[32px] text-charcoal mb-4">{ctaContent.title}</h2>
           <p className="font-sans text-[15px] text-taupe mb-8">{ctaContent.subtitle}</p>

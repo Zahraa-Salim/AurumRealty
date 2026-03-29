@@ -35,7 +35,7 @@ function StatItem({ stat, active }: { stat: Stat; active: boolean }) {
   const count = useCountUp(stat.value, 1400, active)
   return (
     <div className="text-center px-8 py-2">
-      <p className="font-serif text-[40px] md:text-[48px] text-charcoal leading-none mb-2 stat-animate" style={{ animationDelay: '0.1s' }}>
+      <p className="font-serif text-[40px] md:text-[48px] text-cream leading-none mb-2 stat-animate" style={{ animationDelay: '0.1s' }}>
         {stat.prefix ?? ''}{count.toLocaleString()}{stat.suffix}
       </p>
       <p className="font-sans text-[13px] uppercase tracking-widest text-taupe">{stat.label}</p>
@@ -45,17 +45,19 @@ function StatItem({ stat, active }: { stat: Stat; active: boolean }) {
 
 type Props = {
   propertyCount: number
+  locale?: string
 }
 
-export function HomeStatsBar({ propertyCount }: Props) {
+export function HomeStatsBar({ propertyCount, locale }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(false)
+  const isAr = locale === 'ar'
 
   const stats: Stat[] = [
-    { label: 'Properties listed', value: propertyCount || 120, suffix: '+' },
-    { label: 'Years established', value: new Date().getFullYear() - 2010, suffix: '' },
-    { label: 'Transactions completed', value: 340, suffix: '+' },
-    { label: 'Markets served', value: 12, suffix: '' },
+    { label: isAr ? 'عقار مُدرج'    : 'Properties listed',      value: propertyCount || 120,          suffix: '+' },
+    { label: isAr ? 'سنة تأسيس'     : 'Years established',       value: new Date().getFullYear() - 2010, suffix: '' },
+    { label: isAr ? 'صفقة مُنجزة'   : 'Transactions completed',  value: 340,                           suffix: '+' },
+    { label: isAr ? 'سوق نخدمه'     : 'Markets served',          value: 12,                            suffix: ''  },
   ]
 
   useEffect(() => {

@@ -7,6 +7,7 @@ import {
   ABOUT_CTA_DEFAULTS,
   ABOUT_TEAM_DEFAULTS,
   ABOUT_VALUES_DEFAULTS,
+  getParagraphsFromBody,
   parseAboutStoryContent,
   parseAboutTeamContent,
   parseAboutValuesContent,
@@ -27,28 +28,27 @@ export default async function AboutPage() {
   } catch {}
 
   const _story  = contentMap.get('about_story')
+  const _team   = contentMap.get('about_team')
+  const _values = contentMap.get('about_values')
   const _cta    = contentMap.get('about_cta')
 
   const storyContent  = parseAboutStoryContent(_story)
-  const teamContent   = parseAboutTeamContent(contentMap.get('about_team'))
-  const valuesContent = parseAboutValuesContent(contentMap.get('about_values'))
+  const teamContent   = parseAboutTeamContent(_team)
+  const valuesContent = parseAboutValuesContent(_values)
   const ctaContent    = parseCtaContent(_cta, ABOUT_CTA_DEFAULTS)
 
   // Apply Arabic overrides
   if (locale === 'ar') {
-    storyContent.title    = localise(storyContent.title,    _story?.titleAr,    locale)
-    storyContent.subtitle = localise(storyContent.subtitle, _story?.subtitleAr, locale)
+    storyContent.title      = localise(storyContent.title,    _story?.titleAr,    locale)
+    storyContent.subtitle   = localise(storyContent.subtitle, _story?.subtitleAr, locale)
+    storyContent.paragraphs = getParagraphsFromBody(_story?.bodyAr, storyContent.paragraphs)
     ctaContent.title    = localise(ctaContent.title,    _cta?.titleAr,    locale)
     ctaContent.subtitle = localise(ctaContent.subtitle, _cta?.subtitleAr, locale)
     ctaContent.linkText = localise(ctaContent.linkText, _cta?.linkTextAr, locale)
-    // Story paragraphs — bodyAr contains JSON with paragraphs key, same as body
-    if (_story?.bodyAr) {
-      try {
-        const parsed = JSON.parse(_story.bodyAr) as { paragraphs?: string[] }
-        if (parsed.paragraphs?.length) storyContent.paragraphs = parsed.paragraphs
-      } catch {}
-    }
   }
+
+  const teamTitle   = locale === 'ar' ? localise(teamContent.title   || ABOUT_TEAM_DEFAULTS.title,   _team?.titleAr,   locale) : (teamContent.title   || ABOUT_TEAM_DEFAULTS.title)
+  const valuesTitle = locale === 'ar' ? localise(valuesContent.title || ABOUT_VALUES_DEFAULTS.title, _values?.titleAr, locale) : (valuesContent.title || ABOUT_VALUES_DEFAULTS.title)
 
   return (
     <main className="w-full bg-white">
@@ -79,7 +79,7 @@ export default async function AboutPage() {
       <section className="bg-cream py-16 md:py-24 px-4 md:px-8">
         <div className="max-w-[1200px] mx-auto">
           <h2 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.15] mb-12">
-            {teamContent.title || ABOUT_TEAM_DEFAULTS.title}
+            {teamTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {teamContent.members.map((m, index) => {
@@ -106,7 +106,7 @@ export default async function AboutPage() {
 
       <section className="py-16 md:py-24 px-4 md:px-8 max-w-[1200px] mx-auto">
         <h2 className="font-serif text-[32px] md:text-[40px] text-charcoal leading-[1.15] mb-12">
-          {valuesContent.title || ABOUT_VALUES_DEFAULTS.title}
+          {valuesTitle}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {valuesContent.items.map(v=>(

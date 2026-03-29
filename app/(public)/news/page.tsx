@@ -50,6 +50,11 @@ export default async function NewsPage() {
     console.error('Failed to fetch news:', error)
   }
 
+  // In Arabic mode, only show articles that have an Arabic translation
+  if (locale === 'ar') {
+    newsItems = newsItems.filter(a => a.titleAr && a.titleAr.trim())
+  }
+
   const featured = newsItems[0]
   const rest     = newsItems.slice(1)
 

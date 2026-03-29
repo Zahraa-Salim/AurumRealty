@@ -68,16 +68,30 @@ export default function DashboardAboutEditorPage() {
         setValues(parseAboutValuesContent(contentMap.get('about_values')))
         setCta(ctaContent)
 
+        // Read Arabic fields from raw DB records
+        const storyRaw = contentMap.get('about_story')
+        const ctaRaw   = contentMap.get('about_cta')
+
+        let paragraphsAr: string[] = []
+        if (storyRaw?.bodyAr) {
+          try {
+            const parsed = JSON.parse(storyRaw.bodyAr) as { paragraphs?: string[] }
+            if (Array.isArray(parsed?.paragraphs)) paragraphsAr = parsed.paragraphs
+          } catch {
+            paragraphsAr = storyRaw.bodyAr.split('\n\n').filter(Boolean)
+          }
+        }
+
         setStoryAr({
-          titleAr: (storyContent as any).titleAr ?? '',
-          subtitleAr: (storyContent as any).subtitleAr ?? '',
-          paragraphsAr: (storyContent as any).paragraphsAr ?? [],
+          titleAr:      storyRaw?.titleAr    ?? '',
+          subtitleAr:   storyRaw?.subtitleAr ?? '',
+          paragraphsAr,
         })
 
         setCtaAr({
-          titleAr: (ctaContent as any).titleAr ?? '',
-          subtitleAr: (ctaContent as any).subtitleAr ?? '',
-          linkTextAr: (ctaContent as any).linkTextAr ?? '',
+          titleAr:    ctaRaw?.titleAr    ?? '',
+          subtitleAr: ctaRaw?.subtitleAr ?? '',
+          linkTextAr: ctaRaw?.linkTextAr ?? '',
         })
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load about page content.')
@@ -107,7 +121,7 @@ export default function DashboardAboutEditorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
-          { ...toAboutStoryEntry(story), titleAr: storyAr.titleAr || null, subtitleAr: storyAr.subtitleAr || null, paragraphsAr: storyAr.paragraphsAr.length > 0 ? storyAr.paragraphsAr : null },
+          { ...toAboutStoryEntry(story), titleAr: storyAr.titleAr || null, subtitleAr: storyAr.subtitleAr || null, bodyAr: storyAr.paragraphsAr.filter(Boolean).length > 0 ? JSON.stringify({ paragraphs: storyAr.paragraphsAr.filter(Boolean) }) : null },
           toAboutTeamEntry(team),
           toAboutValuesEntry(values),
           { ...toCtaEntry('about_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkTextAr || null },

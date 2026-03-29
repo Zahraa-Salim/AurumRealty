@@ -16,6 +16,15 @@ import { localise, localiseLabel, localiseReadTime, TOPIC_AR, type Locale } from
 const TOPICS_EN = ['All', ...BLOG_TOPIC_OPTIONS]
 const TOPICS_AR = ['الكل', 'توقعات السوق', 'استثمار', 'رؤى المشترين', 'أدلة']
 
+// Maps Arabic topic label → English DB value for filtering
+const AR_TO_EN_TOPIC: Record<string, string> = {
+  'الكل':          'All',
+  'توقعات السوق':  'Market outlook',
+  'استثمار':       'Investment',
+  'رؤى المشترين':  'Buyer insight',
+  'أدلة':          'Guides',
+}
+
 const topicColor: Record<string, string> = {
   'Market outlook': 'bg-blue-50 text-blue-800',
   'Investment':     'bg-amber-50 text-amber-800',
@@ -42,8 +51,11 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
   const TOPICS = locale === 'ar' ? TOPICS_AR : TOPICS_EN
 
   const featured = posts[0]
-  const filtered  = posts.filter(p => activeTopic === 'All' || (locale === 'ar' && activeTopic === TOPICS_AR[0]) || p.topic === activeTopic)
-  const gridPosts = activeTopic === 'All' || (locale === 'ar' && activeTopic === TOPICS_AR[0]) ? posts.slice(1) : filtered
+  // Resolve the active topic to its English DB value for filtering
+  const activeTopic_en = locale === 'ar' ? (AR_TO_EN_TOPIC[activeTopic] ?? activeTopic) : activeTopic
+  const isAll     = activeTopic_en === 'All'
+  const filtered  = posts.filter(p => isAll || p.topic === activeTopic_en)
+  const gridPosts = isAll ? posts.slice(1) : filtered
 
   const formatDate = (d: Date | string | null) => {
     if (!d) return ''
@@ -54,7 +66,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
     <div className="max-w-[1200px] mx-auto px-4 md:px-8 py-12">
 
       {/* Featured article — always the first post, only shown on "All" */}
-      {activeTopic === 'All' && featured && (
+      {isAll && featured && (
         <Link href={`/blog/${featured.slug}`} className="block group no-underline mb-14">
           <div className="flex flex-col lg:flex-row gap-10 items-center">
             <div className="w-full lg:w-[55%] overflow-hidden rounded-sm">
@@ -112,7 +124,7 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
           <p className="font-serif text-[22px] text-charcoal mb-3">
             {locale === 'ar' ? 'لا توجد مقالات في هذا الموضوع حتى الآن' : 'No articles in this topic yet'}
           </p>
-          <button onClick={() => setActiveTopic(locale === 'ar' ? TOPICS_AR[0] : 'All')} className="font-sans text-[13px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer">
+          <button onClick={() => setActiveTopic(locale === 'ar' ? TOPICS_AR[0] : TOPICS_EN[0])} className="font-sans text-[13px] text-taupe hover:text-charcoal underline bg-transparent border-none cursor-pointer">
             {locale === 'ar' ? 'عرض جميع المقالات' : 'View all articles'}
           </button>
         </div>

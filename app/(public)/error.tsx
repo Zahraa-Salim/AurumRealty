@@ -18,11 +18,7 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const [isAr, setIsAr] = useState(false)
-
-  useEffect(() => {
-    setIsAr(getLocaleFromCookie() === 'ar')
-  }, [])
+  const [isAr] = useState(() => getLocaleFromCookie() === 'ar')
 
   useEffect(() => {
     console.error(error)

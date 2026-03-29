@@ -95,24 +95,30 @@ export default function DashboardHomeEditorPage() {
         setJournal(parseHomeJournalContent(contentMap.get('home_journal')))
         setCta(ctaContent)
 
+        // Read Arabic fields from raw DB records (parse functions don't include them)
+        const heroRaw     = contentMap.get('home_hero')
+        const servicesRaw = contentMap.get('home_services')
+        const aboutRaw    = contentMap.get('home_about')
+        const ctaRaw      = contentMap.get('home_cta')
+
         setHeroAr({
-          title: (heroContent as any).titleAr ?? '',
-          subtitle: (heroContent as any).subtitleAr ?? '',
-          linkText: (heroContent as any).linkTextAr ?? ''
+          title:    heroRaw?.titleAr    ?? '',
+          subtitle: heroRaw?.subtitleAr ?? '',
+          linkText: heroRaw?.linkTextAr ?? '',
         })
         setServicesAr({
-          title: (servicesContent as any).titleAr ?? '',
-          subtitle: (servicesContent as any).subtitleAr ?? ''
+          title:    servicesRaw?.titleAr    ?? '',
+          subtitle: servicesRaw?.subtitleAr ?? '',
         })
         setAboutAr({
-          title: (aboutContent as any).titleAr ?? '',
-          subtitle: (aboutContent as any).subtitleAr ?? '',
-          body: (aboutContent as any).bodyAr ?? ''
+          title:    aboutRaw?.titleAr    ?? '',
+          subtitle: aboutRaw?.subtitleAr ?? '',
+          body:     aboutRaw?.bodyAr     ?? '',
         })
         setCtaAr({
-          title: (ctaContent as any).titleAr ?? '',
-          subtitle: (ctaContent as any).subtitleAr ?? '',
-          linkText: (ctaContent as any).linkTextAr ?? ''
+          title:    ctaRaw?.titleAr    ?? '',
+          subtitle: ctaRaw?.subtitleAr ?? '',
+          linkText: ctaRaw?.linkTextAr ?? '',
         })
         setProperties(Array.isArray(propertyItems) ? propertyItems : [])
       } catch (loadError) {

@@ -1,13 +1,12 @@
 /**
- * AurumLogo — reusable SVG logo component.
+ * AurumLogo — hexagon icon + HTML text wordmark.
  *
- * Two exports:
- *   AurumLogo({ variant, height }) — full wordmark (hexagon icon + "AURUM REALTY" text)
- *     variant="light" → charcoal text (for white/cream backgrounds)
- *     variant="dark"  → white text (for dark/charcoal backgrounds)
- *   AurumIcon({ size }) — icon only, used for favicon and compact contexts.
+ * Uses AurumIcon (pure SVG) beside real <span> elements so the browser
+ * renders the font natively — much crisper than SVG <text> nodes.
  *
- * The icon is a faceted hexagon referencing gold crystal geometry.
+ * variant="light" → charcoal text (white/cream backgrounds)
+ * variant="dark"  → white text   (dark/charcoal backgrounds)
+ * locale="ar"     → Arabic wordmark: أوروم / ريالتي
  */
 import React from 'react'
 
@@ -16,67 +15,52 @@ type LogoVariant = 'light' | 'dark'
 interface AurumLogoProps {
   variant?: LogoVariant
   height?: number
+  locale?: string
 }
 
-export function AurumLogo({ variant = 'light', height = 32 }: AurumLogoProps) {
-  const textColor   = variant === 'dark' ? '#FFFFFF' : '#1F1F1F'
-  const subtleColor = '#A8A39F'
-  const gold        = '#D4AF37'
-
-  const scale = height / 32
-  const w     = Math.round(148 * scale)
+export function AurumLogo({ variant = 'light', height = 32, locale = 'en' }: AurumLogoProps) {
+  const isAr       = locale === 'ar'
+  const textColor  = variant === 'dark' ? 'text-white'    : 'text-charcoal'
+  const muteColor  = variant === 'dark' ? 'text-[#A8A39F]' : 'text-[#A8A39F]'
+  const iconSize   = Math.round(height * 0.875) // slightly smaller than line height
 
   return (
-    <svg
-      width={w}
-      height={height}
-      viewBox="0 0 148 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Aurum Realty"
-    >
-      {/* hexagon outer */}
-      <polygon
-        points="16,4 28,10 28,22 16,28 4,22 4,10"
-        fill="none"
-        stroke={gold}
-        strokeWidth="1.2"
-      />
-      {/* hexagon inner fill */}
-      <polygon
-        points="16,9 23,13 23,19 16,23 9,19 9,13"
-        fill={gold}
-        opacity="0.2"
-      />
-      {/* facet lines */}
-      <line x1="16" y1="4"  x2="16" y2="28" stroke={gold} strokeWidth="0.8" opacity="0.45" />
-      <line x1="4"  y1="10" x2="28" y2="22" stroke={gold} strokeWidth="0.8" opacity="0.45" />
-      <line x1="28" y1="10" x2="4"  y2="22" stroke={gold} strokeWidth="0.8" opacity="0.45" />
-
-      {/* AURUM */}
-      <text
-        x="38" y="14"
-        fontFamily="Georgia, 'Times New Roman', serif"
-        fontSize="15"
-        fontWeight="400"
-        fill={textColor}
-        letterSpacing="0.04em"
-      >
-        AURUM
-      </text>
-
-      {/* REALTY */}
-      <text
-        x="38" y="27"
-        fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-        fontSize="10"
-        fontWeight="400"
-        fill={subtleColor}
-        letterSpacing="0.14em"
-      >
-        REALTY
-      </text>
-    </svg>
+    <div className="flex items-center gap-2.5" aria-label={isAr ? 'أوروم ريالتي' : 'Aurum Realty'}>
+      <AurumIcon size={iconSize} />
+      <div className="flex flex-col leading-none gap-[3px]">
+        {isAr ? (
+          <>
+            <span
+              className={`font-sans font-semibold ${textColor}`}
+              style={{ fontSize: Math.round(height * 0.44), letterSpacing: '0.01em' }}
+            >
+              أوروم
+            </span>
+            <span
+              className={`font-sans font-normal ${muteColor}`}
+              style={{ fontSize: Math.round(height * 0.28), letterSpacing: '0.06em' }}
+            >
+              ريالتي
+            </span>
+          </>
+        ) : (
+          <>
+            <span
+              className={`font-serif font-normal ${textColor}`}
+              style={{ fontSize: Math.round(height * 0.47), letterSpacing: '0.04em' }}
+            >
+              AURUM
+            </span>
+            <span
+              className={`font-sans font-normal ${muteColor}`}
+              style={{ fontSize: Math.round(height * 0.30), letterSpacing: '0.14em' }}
+            >
+              REALTY
+            </span>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -89,13 +73,13 @@ export function AurumIcon({ size = 32 }: { size?: number }) {
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="Aurum Realty"
+      aria-hidden="true"
     >
       <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" fill="none" stroke={gold} strokeWidth="1.5" />
-      <polygon points="16,8 24,12 24,20 16,24 8,20 8,12"  fill={gold} opacity="0.2" />
-      <line x1="16" y1="2"  x2="16" y2="30" stroke={gold} strokeWidth="1"   opacity="0.45" />
-      <line x1="2"  y1="9"  x2="30" y2="23" stroke={gold} strokeWidth="1"   opacity="0.45" />
-      <line x1="30" y1="9"  x2="2"  y2="23" stroke={gold} strokeWidth="1"   opacity="0.45" />
+      <polygon points="16,8 24,12 24,20 16,24 8,20 8,12" fill={gold} opacity="0.2" />
+      <line x1="16" y1="2"  x2="16" y2="30" stroke={gold} strokeWidth="1" opacity="0.45" />
+      <line x1="2"  y1="9"  x2="30" y2="23" stroke={gold} strokeWidth="1" opacity="0.45" />
+      <line x1="30" y1="9"  x2="2"  y2="23" stroke={gold} strokeWidth="1" opacity="0.45" />
     </svg>
   )
 }

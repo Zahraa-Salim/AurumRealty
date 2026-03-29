@@ -176,9 +176,7 @@ export default function PropertyDetailPage() {
   const [heroIdx, setHeroIdx]  = useState(0)
   const [locale,  setLocale]   = useState<Locale>('en')
 
-  useEffect(()=>{
-    setLocale(getLocaleFromCookie() as Locale)
-  },[])
+  useEffect(() => { setLocale(getLocaleFromCookie()) }, [])
 
   useEffect(()=>{
     if (!params?.id) return

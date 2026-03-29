@@ -17,6 +17,7 @@ import {
   HOME_SERVICES_DEFAULTS,
   SERVICE_SECTION_DEFAULTS,
   SERVICES_INDEX_DEFAULT_KEYS,
+  getParagraphsFromBody,
   parseHomeAboutContent,
   parseHomeCtaContent,
   parseHomeFeaturedPropertiesContent,
@@ -32,12 +33,12 @@ export const revalidate = 60
 
 type HomeFeaturedProperty = Pick<
   Property,
-  'id' | 'title' | 'price' | 'bedrooms' | 'bathrooms' | 'area' | 'images' | 'status' | 'neighbourhood'
+  'id' | 'title' | 'titleAr' | 'price' | 'bedrooms' | 'bathrooms' | 'area' | 'images' | 'status' | 'neighbourhood'
 >
 
 type HomeLatestPost = Pick<
   BlogPost,
-  'slug' | 'title' | 'topic' | 'heroImage' | 'readTime' | 'author'
+  'slug' | 'title' | 'titleAr' | 'topic' | 'heroImage' | 'readTime' | 'author'
 >
 
 export default async function HomePage() {
@@ -65,7 +66,7 @@ export default async function HomePage() {
         },
       }),
       prisma.property.findMany({ where:{isPublished:true}, orderBy:{createdAt:'desc'}, take:3 }),
-      prisma.blogPost.findFirst({ where:{isPublished:true}, orderBy:{publishedAt:'desc'}, select:{slug:true,title:true,topic:true,heroImage:true,readTime:true,author:true} }),
+      prisma.blogPost.findFirst({ where:{isPublished:true}, orderBy:{publishedAt:'desc'}, select:{slug:true,title:true,titleAr:true,topic:true,heroImage:true,readTime:true,author:true} }),
     ])
 
     homeSections = toContentMap(contentItems)
@@ -80,7 +81,21 @@ export default async function HomePage() {
 
     serviceCards = serviceKeys.map((key, index) => {
       const fallback = SERVICE_SECTION_DEFAULTS[index % SERVICE_SECTION_DEFAULTS.length] ?? SERVICE_SECTION_DEFAULTS[0]
-      return parseServiceSectionContent(fullContentMap.get(key), { ...fallback, key })
+      const svc = parseServiceSectionContent(fullContentMap.get(key), { ...fallback, key })
+      if (locale === 'ar') {
+        const raw = fullContentMap.get(key)
+        if (raw) {
+          svc.title = localise(svc.title, raw.titleAr, locale)
+          if (raw.bodyAr) {
+            try {
+              const parsed = JSON.parse(raw.bodyAr) as { paragraphs?: string[]; points?: string[] }
+              if (parsed.paragraphs?.length) svc.paragraphs = parsed.paragraphs
+              if (parsed.points?.length)     svc.points     = parsed.points
+            } catch {}
+          }
+        }
+      }
+      return svc
     })
 
     const featuredContent = parseHomeFeaturedPropertiesContent(homeSections.get('home_featured_properties'))
@@ -94,6 +109,7 @@ export default async function HomePage() {
         select: {
           id: true,
           title: true,
+          titleAr: true,
           price: true,
           bedrooms: true,
           bathrooms: true,
@@ -130,7 +146,9 @@ export default async function HomePage() {
     heroContent.title    = localise(heroContent.title,    _hero?.titleAr,    locale)
     heroContent.subtitle = localise(heroContent.subtitle, _hero?.subtitleAr, locale)
     heroContent.linkText = localise(heroContent.linkText, _hero?.linkTextAr, locale)
-    aboutContent.title   = localise(aboutContent.title,  _about?.titleAr,   locale)
+    aboutContent.title      = localise(aboutContent.title,    _about?.titleAr,   locale)
+    aboutContent.linkText   = localise(aboutContent.linkText, _about?.linkTextAr, locale)
+    aboutContent.paragraphs = getParagraphsFromBody(_about?.bodyAr, aboutContent.paragraphs)
     servicesContent.title    = localise(servicesContent.title,    _services?.titleAr,    locale)
     servicesContent.subtitle = localise(servicesContent.subtitle, _services?.subtitleAr, locale)
     ctaContent.title    = localise(ctaContent.title,    _cta?.titleAr,    locale)
@@ -203,7 +221,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── STATS BAR ── */}
-      <HomeStatsBar propertyCount={featured.length} />
+      <HomeStatsBar propertyCount={featured.length} locale={locale} />
 
       {/* ── FEATURED PROPERTIES ── */}
       <section className="py-16 md:py-24 px-4 md:px-8 max-w-[1200px] mx-auto">
@@ -234,7 +252,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-5 relative">
-                    <h3 className="font-serif text-[18px] text-charcoal mb-2">{localise(p.title, (p as any).titleAr, locale)}</h3>
+                    <h3 className="font-serif text-[18px] text-charcoal mb-2">{localise(p.title, p.titleAr, locale)}</h3>
                     <p className="font-sans text-[16px] font-medium text-gold mb-3">{p.price}</p>
                     <p className="font-sans text-[13px] text-taupe">{p.bedrooms} {locale === 'ar' ? 'غرف' : 'bed'} · {p.bathrooms} {locale === 'ar' ? 'حمام' : 'bath'} · {p.area}</p>
                     <p className="font-sans text-[12px] text-mid-gray italic mt-1">{localiseLabel(p.neighbourhood, NEIGHBOURHOOD_AR, locale)}</p>
@@ -317,13 +335,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── LATEST FROM THE JOURNAL ── */}
-      {latestPost && (
+      {/* ── LATEST FROM THE JOURNAL — hide in Arabic if no Arabic translation ── */}
+      {latestPost && (locale !== 'ar' || (latestPost.titleAr && latestPost.titleAr.trim())) && (
         <section className="bg-white py-14 px-4 md:px-8 border-t border-light-gray" style={{borderWidth:'0.5px 0 0 0'}}>
           <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <p className="font-sans text-[12px] font-medium text-taupe uppercase tracking-wider mb-2">{journalContent.label}</p>
-              <h3 className="font-serif text-[22px] text-charcoal leading-[1.3] max-w-[520px]">{latestPost.title}</h3>
+              <h3 className="font-serif text-[22px] text-charcoal leading-[1.3] max-w-[520px]">{localise(latestPost.title, latestPost.titleAr, locale)}</h3>
             </div>
             <Link href={`/blog/${latestPost.slug}`} className="flex-shrink-0 inline-block bg-gold hover:bg-gold-dark text-charcoal font-sans text-[13px] font-medium px-6 py-3 rounded-full transition-colors no-underline">
               {journalContent.buttonText}

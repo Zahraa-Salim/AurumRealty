@@ -99,11 +99,19 @@ export default function DashboardServicesEditorPage() {
         keys.forEach((key) => {
           const content = contentMap.get(key)
           if (content) {
+            let paragraphsAr: string[] = []
+            if (content.bodyAr) {
+              try {
+                const parsed = JSON.parse(content.bodyAr) as { paragraphs?: string[] }
+                if (Array.isArray(parsed?.paragraphs)) paragraphsAr = parsed.paragraphs
+              } catch {
+                // plain text fallback
+                paragraphsAr = content.bodyAr.split('\n\n').filter(Boolean)
+              }
+            }
             arMap[key] = {
-              titleAr: (content as any).titleAr ?? '',
-              paragraphsAr: (content as any).paragraphsAr ?
-                ((content as any).paragraphsAr as string[]) :
-                []
+              titleAr: content.titleAr ?? '',
+              paragraphsAr,
             }
           }
         })
@@ -117,6 +125,12 @@ export default function DashboardServicesEditorPage() {
 
     void load()
   }, [canEdit, status])
+
+  const updateService = useCallback((index: number, patch: Partial<ServiceSectionContent>) => {
+    setServices(current =>
+      current.map((service, i) => i === index ? { ...service, ...patch } : service)
+    )
+  }, [])
 
   if (status === 'loading') return <EditorState message="Loading services editor…" />
   if (!canEdit) return <DashboardAccessDenied message="You do not have permission to edit website pages." />
@@ -136,10 +150,11 @@ export default function DashboardServicesEditorPage() {
           toServicesIndexEntry({ keys: serviceKeys }),
           ...services.map((service) => {
             const ar = servicesAr[service.key] || { titleAr: '', paragraphsAr: [] }
+            const cleanAr = ar.paragraphsAr.filter(Boolean)
             return {
               ...toServiceSectionEntry(service),
               titleAr: ar.titleAr || null,
-              paragraphsAr: ar.paragraphsAr.length > 0 ? ar.paragraphsAr : null,
+              bodyAr: cleanAr.length > 0 ? JSON.stringify({ paragraphs: cleanAr }) : null,
             }
           }),
           { ...toCtaEntry('services_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkText || null },
@@ -196,12 +211,6 @@ export default function DashboardServicesEditorPage() {
       return arr
     })
   }
-
-  const updateService = useCallback((index: number, patch: Partial<ServiceSectionContent>) => {
-    setServices(current =>
-      current.map((service, i) => i === index ? { ...service, ...patch } : service)
-    )
-  }, [])
 
   return (
     <div className="max-w-6xl mx-auto pb-24 space-y-8">

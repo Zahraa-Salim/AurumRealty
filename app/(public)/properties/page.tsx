@@ -63,12 +63,10 @@ export default function PropertiesPage() {
   const [locale,       setLocale]       = useState<Locale>('en')
   const drawerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => { setLocale(getLocaleFromCookie()) }, [])
+
   const TYPES     = [...new Set(all.map(p=>p.type))].sort()
   const LOCATIONS = [...new Set(all.map(p=>p.neighbourhood))].sort()
-
-  useEffect(() => {
-    setLocale(getLocaleFromCookie() as Locale)
-  }, [])
 
   useEffect(() => {
     fetch('/api/properties').then(r=>r.json()).then(d=>{setAll(d);setLoading(false)}).catch(()=>{setError(true);setLoading(false)})

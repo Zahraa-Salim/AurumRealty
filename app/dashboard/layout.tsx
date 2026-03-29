@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { title, breadcrumbs } = getPageInfo(pathname)
 
   return (
-    <div className="min-h-screen bg-[#F7F6F3] flex">
+    <div className="min-h-screen bg-[#F7F6F3] flex" dir="ltr">
       <DashboardSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col lg:ml-[240px] min-w-0">
         <DashboardTopBar

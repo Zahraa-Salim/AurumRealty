@@ -43,6 +43,11 @@ export default async function BlogPage() {
     console.error('Failed to fetch blog posts:', error)
   }
 
+  // In Arabic mode, only show posts that have an Arabic translation
+  if (locale === 'ar') {
+    posts = posts.filter(p => p.titleAr && p.titleAr.trim())
+  }
+
   return (
     <main className="w-full bg-white min-h-screen pb-24">
       <section className="bg-cream py-16 px-4 md:px-8">

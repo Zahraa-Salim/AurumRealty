@@ -45,69 +45,8 @@ function initials(name: string): string {
   return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
 }
 
-// ─── ICONS ───────────────────────────────────────────────────────────────────
-
-function IconProperties() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/>
-    </svg>
-  )
-}
-function IconBlog() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-    </svg>
-  )
-}
-function IconNews() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/>
-    </svg>
-  )
-}
-function IconMessages() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-    </svg>
-  )
-}
-function IconShowings() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
-  )
-}
-function IconUsers() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  )
-}
-
-const STAT_ICONS: Record<string, React.ReactNode> = {
-  properties: <IconProperties />, blog: <IconBlog />, news: <IconNews />,
-  messages: <IconMessages />, showings: <IconShowings />, users: <IconUsers />,
-}
-
-const ACCENT_STYLES: Record<string, { border: string; iconBg: string; iconColor: string }> = {
-  gold:     { border: 'border-l-gold',    iconBg: 'bg-gold/10',    iconColor: 'text-gold' },
-  charcoal: { border: 'border-l-charcoal/40', iconBg: 'bg-charcoal/5', iconColor: 'text-charcoal' },
-  error:    { border: 'border-l-error',   iconBg: 'bg-error/10',   iconColor: 'text-error' },
-  success:  { border: 'border-l-success', iconBg: 'bg-success/10', iconColor: 'text-success' },
-  taupe:    { border: 'border-l-taupe/40',iconBg: 'bg-taupe/10',   iconColor: 'text-taupe' },
-}
-
-const ACTIVITY_DOT: Record<string, string> = {
-  showing: 'bg-success', enquiry: 'bg-gold', message: 'bg-charcoal/50',
-}
 const ACTIVITY_LABEL: Record<string, string> = {
-  showing: 'requested a showing', enquiry: 'sent an agent enquiry', message: 'sent a contact message',
+  showing: 'Showing request', enquiry: 'Agent enquiry', message: 'Contact message',
 }
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
@@ -136,27 +75,15 @@ export function DashboardOverviewClient({ roleName, permissions, userName }: Pro
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* ── WELCOME BAR ── */}
-      <div className="bg-cream rounded-sm px-7 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-light-gray" style={{ borderWidth: '0.5px' }}>
+      {/* ── WELCOME ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1">
         <div>
-          <h1 className="font-serif text-[26px] text-charcoal leading-tight mb-0.5">{getGreeting(userName)}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="font-sans text-[12px] font-medium px-2.5 py-0.5 rounded-full bg-charcoal/8 text-charcoal border border-charcoal/10" style={{ borderWidth: '0.5px' }}>
-              {roleName}
-            </span>
-            {overview.canViewOwnOnly && (
-              <span className="font-sans text-[11px] text-taupe">· Viewing your assigned submissions only</span>
-            )}
-          </div>
+          <h1 className="font-serif text-[28px] text-charcoal leading-tight">{getGreeting(userName)}</h1>
+          <p className="font-sans text-[13px] text-taupe mt-1">{roleName}{overview.canViewOwnOnly ? ' · Viewing your assigned submissions only' : ''}</p>
         </div>
-        <div className="text-right">
-          <p className="font-sans text-[13px] text-charcoal font-medium">{today}</p>
-          {overview.generatedAt && !loading && (
-            <p className="font-sans text-[11px] text-taupe mt-0.5">Stats refreshed {relativeTime(overview.generatedAt)}</p>
-          )}
-        </div>
+        <p className="font-sans text-[13px] text-taupe pb-0.5">{today}</p>
       </div>
 
       {error && (
@@ -165,103 +92,89 @@ export function DashboardOverviewClient({ roleName, permissions, userName }: Pro
         </div>
       )}
 
-      {/* ── STAT CARDS ── */}
+      {/* ── STATS ROW ── */}
       {(loading || overview.statCards.length > 0) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white p-5 rounded-sm border border-light-gray border-l-4 border-l-light-gray" style={{ borderWidth: '0.5px' }}>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="h-9 w-16 bg-light-gray/60 rounded animate-pulse" />
-                    <div className="h-8 w-8 bg-light-gray/40 rounded-sm animate-pulse" />
+        <div className="bg-white border border-light-gray rounded-sm" style={{ borderWidth: '0.5px' }}>
+          <div className="grid divide-x divide-light-gray" style={{ gridTemplateColumns: `repeat(${loading ? 4 : Math.min(overview.statCards.length, 6)}, 1fr)` }}>
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="px-6 py-5">
+                    <div className="h-7 w-10 bg-light-gray/60 rounded animate-pulse mb-2" />
+                    <div className="h-3 w-20 bg-light-gray/40 rounded animate-pulse" />
                   </div>
-                  <div className="h-3.5 w-28 bg-light-gray/50 rounded animate-pulse" />
-                </div>
-              ))
-            : overview.statCards.map(card => {
-                const accent = ACCENT_STYLES[card.accent] ?? ACCENT_STYLES.charcoal
-                return (
+                ))
+              : overview.statCards.map(card => (
                   <Link
                     key={card.label}
                     href={card.link}
-                    className={`no-underline block bg-white p-5 rounded-sm border border-light-gray border-l-4 ${accent.border} hover:shadow-hover transition-shadow group`}
-                    style={{ borderWidth: '0.5px', borderLeftWidth: '3px' }}
+                    className="no-underline block px-6 py-5 hover:bg-[#F7F6F3] transition-colors group"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <p className="font-serif text-[36px] leading-none text-charcoal">{card.value}</p>
-                      <div className={`w-9 h-9 rounded-sm flex items-center justify-center ${accent.iconBg} ${accent.iconColor} flex-shrink-0`}>
-                        {STAT_ICONS[card.icon]}
-                      </div>
-                    </div>
-                    <p className="font-sans text-[12px] text-taupe uppercase tracking-wider">{card.label}</p>
-                    <p className="font-sans text-[12px] text-gold mt-2 opacity-0 group-hover:opacity-100 transition-opacity">View all →</p>
-                  </Link>
-                )
-              })
-          }
-        </div>
-      )}
-
-      {/* ── TASK CARDS ── */}
-      {(loading || overview.taskCards.length > 0) && (
-        <section className="space-y-3">
-          <div className="flex items-baseline gap-3">
-            <h2 className="font-serif text-[20px] text-charcoal">Needs attention</h2>
-            <p className="font-sans text-[12px] text-taupe">Items requiring action</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {loading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white p-5 rounded-sm border border-light-gray" style={{ borderWidth: '0.5px' }}>
-                    <div className="h-8 w-12 bg-light-gray/60 rounded animate-pulse mb-2" />
-                    <div className="h-3.5 w-24 bg-light-gray/50 rounded animate-pulse mb-3" />
-                    <div className="h-3 w-full bg-light-gray/40 rounded animate-pulse" />
-                  </div>
-                ))
-              : overview.taskCards.map(task => (
-                  <Link
-                    key={task.label}
-                    href={task.href}
-                    className="no-underline block bg-white rounded-sm border hover:shadow-hover transition-shadow"
-                    style={{
-                      borderWidth: '0.5px',
-                      borderLeftWidth: '3px',
-                      borderLeftColor: task.urgent ? (task.value > 5 ? '#D32F2F' : '#D4AF37') : '#388E3C',
-                    }}
-                  >
-                    <div className="p-5">
-                      <p className={`font-serif text-[32px] leading-none mb-1 ${task.urgent ? (task.value > 5 ? 'text-error' : 'text-gold') : 'text-success'}`}>
-                        {task.value}
-                      </p>
-                      <p className="font-sans text-[13px] font-medium text-charcoal mb-1">{task.label}</p>
-                      <p className="font-sans text-[11px] text-taupe leading-[1.5]">{task.hint}</p>
-                      <p className="font-sans text-[11px] text-gold mt-3">Review →</p>
-                    </div>
+                    <p className="font-serif text-[30px] leading-none text-charcoal mb-1.5">{card.value}</p>
+                    <p className="font-sans text-[11px] text-taupe uppercase tracking-wider leading-snug">{card.label}</p>
                   </Link>
                 ))
             }
           </div>
-        </section>
+        </div>
       )}
 
-      {/* ── ACTIVITY + QUICK ACTIONS ── */}
+      {/* ── MAIN GRID: activity + sidebar ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Recent activity */}
-        <div className="lg:col-span-2">
+        {/* Left: activity (2/3) */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Needs attention */}
+          {(loading || overview.taskCards.length > 0) && (
+            <Panel title="Needs attention">
+              {loading ? (
+                <div className="-mx-6 -mb-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="px-6 py-4 border-b border-light-gray last:border-0 flex items-center gap-4" style={{ borderWidth: '0 0 0.5px 0' }}>
+                      <div className="h-6 w-6 bg-light-gray/60 rounded animate-pulse" />
+                      <div className="flex-1">
+                        <div className="h-3.5 w-40 bg-light-gray/50 rounded animate-pulse mb-1.5" />
+                        <div className="h-3 w-56 bg-light-gray/40 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="-mx-6 -mb-6">
+                  {overview.taskCards.map((task, idx) => (
+                    <Link
+                      key={task.label}
+                      href={task.href}
+                      className="no-underline flex items-center gap-5 px-6 py-4 border-b border-light-gray last:border-0 hover:bg-[#F7F6F3] transition-colors group"
+                      style={{ borderWidth: idx === overview.taskCards.length - 1 ? '0' : '0 0 0.5px 0' }}
+                    >
+                      <span className="font-serif text-[24px] leading-none text-charcoal w-8 text-right flex-shrink-0">{task.value}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-sans text-[13px] font-medium text-charcoal">{task.label}</p>
+                        <p className="font-sans text-[12px] text-taupe">{task.hint}</p>
+                      </div>
+                      <svg className="text-taupe group-hover:text-charcoal transition-colors flex-shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {/* Recent activity */}
           <Panel title="Recent activity">
             {!(permissionState.canViewSubmissions || permissionState.canViewOwnSubmissions) ? (
-              <p className="font-sans text-[13px] text-taupe">Recent activity is only shown to roles with submissions access.</p>
+              <p className="font-sans text-[13px] text-taupe">Activity is shown to roles with submissions access.</p>
             ) : loading ? (
               <div className="-mx-6 -mb-6">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="px-6 py-4 border-b border-light-gray last:border-0 flex items-center gap-3" style={{ borderWidth: '0 0 0.5px 0' }}>
-                    <div className="w-8 h-8 rounded-full bg-light-gray/50 animate-pulse flex-shrink-0" />
+                    <div className="w-7 h-7 rounded-full bg-light-gray/50 animate-pulse flex-shrink-0" />
                     <div className="flex-1">
                       <div className="h-3.5 w-3/4 bg-light-gray/50 rounded animate-pulse mb-1.5" />
                       <div className="h-3 w-1/3 bg-light-gray/40 rounded animate-pulse" />
                     </div>
-                    <div className="h-3 w-12 bg-light-gray/40 rounded animate-pulse" />
+                    <div className="h-3 w-10 bg-light-gray/40 rounded animate-pulse" />
                   </div>
                 ))}
               </div>
@@ -277,18 +190,37 @@ export function DashboardOverviewClient({ roleName, permissions, userName }: Pro
           </Panel>
         </div>
 
-        {/* Quick actions */}
-        <QuickActionsSection quickActions={quickActions} />
-      </div>
+        {/* Right: quick actions (1/3) */}
+        <div className="space-y-6">
+          <Panel title="Quick actions">
+            {quickActions.length === 0 ? (
+              <p className="font-sans text-[13px] text-taupe">No actions available.</p>
+            ) : (
+              <div className="-mx-6 -mb-6">
+                {quickActions.map((action, i) => (
+                  <Link
+                    key={action.href}
+                    href={action.href}
+                    className="no-underline flex items-center justify-between px-6 py-3.5 border-b border-light-gray last:border-0 hover:bg-[#F7F6F3] transition-colors group"
+                    style={{ borderWidth: i === quickActions.length - 1 ? '0' : '0 0 0.5px 0' }}
+                  >
+                    <span className={`font-sans text-[13px] ${i === 0 ? 'font-medium text-charcoal' : 'text-charcoal'}`}>{action.label}</span>
+                    <svg className="text-taupe group-hover:text-charcoal transition-colors flex-shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Panel>
 
-      {/* ── ADMIN SUMMARY ── */}
-      {permissionState.isSuperAdmin && (
-        <AdminSummarySection
-          loading={loading}
-          adminSummaryCards={overview.adminSummaryCards}
-          generatedAt={overview.generatedAt}
-        />
-      )}
+          {/* Admin summary */}
+          {permissionState.isSuperAdmin && (
+            <AdminSummarySection
+              loading={loading}
+              adminSummaryCards={overview.adminSummaryCards}
+            />
+          )}
+        </div>
+      </div>
 
     </div>
   )
@@ -300,104 +232,64 @@ function ActivityRow({ item, isLast }: { item: DashboardActivityItem; isLast: bo
   return (
     <Link
       href={item.href}
-      className="no-underline flex items-center gap-3 px-6 py-4 hover:bg-light-gray/10 transition-colors border-b border-light-gray"
+      className="no-underline flex items-center gap-3 px-6 py-4 hover:bg-[#F7F6F3] transition-colors border-b border-light-gray"
       style={{ borderWidth: isLast ? '0' : '0 0 0.5px 0' }}
     >
-      {/* Avatar */}
-      <div className="w-8 h-8 rounded-full bg-charcoal/8 flex items-center justify-center flex-shrink-0">
-        <span className="font-sans text-[11px] font-medium text-charcoal">{initials(item.personName)}</span>
+      <div className="w-7 h-7 rounded-full bg-light-gray/50 flex items-center justify-center flex-shrink-0">
+        <span className="font-sans text-[10px] font-medium text-charcoal">{initials(item.personName)}</span>
       </div>
-      {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="font-sans text-[13px] text-charcoal leading-snug">
+        <p className="font-sans text-[13px] text-charcoal leading-snug truncate">
           <span className="font-medium">{item.personName}</span>
-          {' '}
-          <span className="text-taupe">{ACTIVITY_LABEL[item.type]}</span>
-          {item.detail && item.type !== 'message' && (
-            <span className="text-taupe"> {item.detail}</span>
-          )}
+          <span className="text-taupe"> · {ACTIVITY_LABEL[item.type]}</span>
         </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ACTIVITY_DOT[item.type]}`} />
-          <span className="font-sans text-[11px] text-taupe capitalize">{item.type === 'enquiry' ? 'Agent enquiry' : item.type === 'showing' ? 'Showing request' : 'Message'}</span>
-        </div>
+        {item.detail && item.type !== 'message' && (
+          <p className="font-sans text-[11px] text-taupe truncate">{item.detail}</p>
+        )}
       </div>
-      {/* Time */}
       <span className="font-sans text-[11px] text-taupe whitespace-nowrap flex-shrink-0">{relativeTime(item.createdAt)}</span>
     </Link>
-  )
-}
-
-function QuickActionsSection({ quickActions }: { quickActions: { label: string; href: string }[] }) {
-  return (
-    <Panel title="Quick actions">
-      {quickActions.length === 0 ? (
-        <p className="font-sans text-[13px] text-taupe">No quick actions available for this role.</p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {quickActions.map((action, i) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className={`w-full text-center font-sans text-[13px] font-medium py-2.5 rounded-full transition-colors no-underline ${
-                i === 0
-                  ? 'bg-gold hover:bg-gold-dark text-charcoal'
-                  : 'bg-white hover:bg-light-gray/30 text-charcoal border border-charcoal/20'
-              }`}
-              style={{ borderWidth: i === 0 ? undefined : '0.5px' }}
-            >
-              {action.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </Panel>
   )
 }
 
 function AdminSummarySection({
   loading,
   adminSummaryCards,
-  generatedAt,
 }: {
   loading: boolean
   adminSummaryCards: DashboardOverviewData['adminSummaryCards']
-  generatedAt: string
 }) {
   return (
     <Panel
-      title="System overview"
+      title="System"
       headerRight={
-        <Link href="/dashboard/users" className="font-sans text-[12px] text-gold hover:text-gold-dark no-underline transition-colors">
-          Manage →
+        <Link href="/dashboard/users" className="font-sans text-[12px] text-taupe hover:text-charcoal no-underline transition-colors">
+          Manage users →
         </Link>
       }
     >
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-light-gray/20 rounded-sm p-4">
-              <div className="h-8 w-12 bg-light-gray/60 rounded animate-pulse mb-2" />
-              <div className="h-3 w-20 bg-light-gray/50 rounded animate-pulse" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div className="h-3 w-24 bg-light-gray/50 rounded animate-pulse" />
+              <div className="h-4 w-8 bg-light-gray/60 rounded animate-pulse" />
             </div>
           ))}
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {adminSummaryCards.map(card => (
-              <div key={card.label} className="bg-light-gray/20 rounded-sm p-4">
-                <p className="font-serif text-[28px] text-charcoal leading-none mb-1">{card.value}</p>
-                <p className="font-sans text-[11px] text-taupe uppercase tracking-wider">{card.label}</p>
-              </div>
-            ))}
-          </div>
-          {generatedAt && (
-            <p className="font-sans text-[11px] text-taupe mt-4 pt-4 border-t border-light-gray" style={{ borderWidth: '0.5px 0 0 0' }}>
-              Cache refreshed: {new Date(generatedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-            </p>
-          )}
-        </>
+        <div className="-mx-6 -mb-6">
+          {adminSummaryCards.map((card, i) => (
+            <div
+              key={card.label}
+              className="flex items-center justify-between px-6 py-3.5 border-b border-light-gray last:border-0"
+              style={{ borderWidth: i === adminSummaryCards.length - 1 ? '0' : '0 0 0.5px 0' }}
+            >
+              <span className="font-sans text-[12px] text-taupe uppercase tracking-wider">{card.label}</span>
+              <span className="font-serif text-[20px] text-charcoal leading-none">{card.value}</span>
+            </div>
+          ))}
+        </div>
       )}
     </Panel>
   )
@@ -413,9 +305,9 @@ function Panel({
   headerRight?: React.ReactNode
 }) {
   return (
-    <div className="bg-white rounded-sm border border-light-gray h-fit" style={{ borderWidth: '0.5px' }}>
+    <div className="bg-white rounded-sm border border-light-gray" style={{ borderWidth: '0.5px' }}>
       <div className="px-6 py-4 border-b border-light-gray flex items-center justify-between" style={{ borderWidth: '0 0 0.5px 0' }}>
-        <h2 className="font-serif text-[17px] text-charcoal">{title}</h2>
+        <h2 className="font-sans text-[11px] font-medium text-taupe uppercase tracking-wider">{title}</h2>
         {headerRight}
       </div>
       <div className="p-6">{children}</div>

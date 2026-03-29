@@ -104,7 +104,7 @@ export function Navigation({ locale }: { locale: Locale }) {
 
           {/* LOGO */}
           <Link href="/" className="no-underline z-10 flex items-center hover:opacity-80 transition-opacity duration-200">
-            <AurumLogo variant="light" height={30} />
+            <AurumLogo variant="light" height={30} locale={locale} />
           </Link>
 
           {/* DESKTOP LINKS */}

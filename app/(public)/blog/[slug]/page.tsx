@@ -16,7 +16,7 @@ export const revalidate = 60
 
 type RelatedBlogPost = Pick<
   BlogPost,
-  'slug' | 'title' | 'topic' | 'heroImage' | 'author' | 'readTime'
+  'slug' | 'title' | 'titleAr' | 'topic' | 'heroImage' | 'author' | 'readTime'
 >
 
 const authorRole: Record<string,string> = {
@@ -59,7 +59,7 @@ export default async function BlogPostPage({
       where: { isPublished: true, slug: { not: slug } },
       orderBy: { publishedAt: 'desc' },
       take: 3,
-      select: { slug: true, title: true, topic: true, heroImage: true, author: true, readTime: true },
+      select: { slug: true, title: true, titleAr: true, topic: true, heroImage: true, author: true, readTime: true },
     })
   } catch {
     notFound()

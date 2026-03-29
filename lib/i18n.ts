@@ -78,12 +78,21 @@ export const TYPE_AR: Record<string, string> = {
 
 /** Neighbourhood name → Arabic */
 export const NEIGHBOURHOOD_AR: Record<string, string> = {
-  'Downtown':          'وسط المدينة',
-  'Riverside':         'واجهة النهر',
-  'Hillside':          'المنحدر',
-  'Harbourfront':      'واجهة الميناء',
-  'Garden Quarter':    'حي الحدائق',
-  'Financial District':'الحي المالي',
+  'Downtown':              'وسط المدينة',
+  'Downtown Premium':      'وسط المدينة الراقي',
+  'Riverside':             'واجهة النهر',
+  'Hillside':              'المنحدر',
+  'Harbourfront':          'واجهة الميناء',
+  'Garden Quarter':        'حي الحدائق',
+  'Financial District':    'الحي المالي',
+  'Beachfront District':   'حي الواجهة الشاطئية',
+  'Arts Quarter':          'حي الفنون',
+  'Historic District':     'الحي التاريخي',
+  'Mountain View Estates': 'عقارات إطلالة الجبل',
+  'Westside Premium':      'الجانب الغربي الراقي',
+  'Lakeside Residences':   'مساكن بحيرة',
+  'Marina District':       'حي المارينا',
+  'Heritage Quarter':      'حي التراث',
 }
 
 /** Blog topic → Arabic */

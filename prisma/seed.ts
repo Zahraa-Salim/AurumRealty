@@ -323,6 +323,21 @@ async function main() {
       },
     })
   }
+
+  // Always sync Arabic JSON bodies for about_team and about_values
+  // (these are structured JSON blobs the dashboard populates — safe to overwrite
+  //  because the dashboard editor will re-save them if the team edits content)
+  const arBodyUpdates: { key: string; bodyAr: string; titleAr: string }[] = siteContent
+    .filter(sc => ['about_team', 'about_values'].includes(sc.key) && sc.bodyAr != null)
+    .map(sc => ({ key: sc.key, bodyAr: sc.bodyAr as string, titleAr: sc.titleAr ?? '' }))
+
+  for (const upd of arBodyUpdates) {
+    await prisma.siteContent.updateMany({
+      where: { key: upd.key },
+      data:  { bodyAr: upd.bodyAr, titleAr: upd.titleAr },
+    })
+  }
+
   console.log('  ✓ Site content')
 
   // ── PROPERTIES ─────────────────────────────────────────────────────────────
@@ -719,6 +734,16 @@ async function main() {
           isPublished:      true,
           updatedAt:        new Date(),
           listingExpiresAt: new Date(now.getTime() + 90 * 86_400_000),
+        },
+      })
+    } else {
+      // Always sync Arabic fields so re-running seed fills in translations
+      await prisma.property.update({
+        where: { id: existing.id },
+        data: {
+          titleAr:       p.titleAr       ?? existing.titleAr,
+          descriptionAr: p.descriptionAr ?? existing.descriptionAr,
+          featuresAr:    p.featuresAr && p.featuresAr.length > 0 ? p.featuresAr : existing.featuresAr,
         },
       })
     }

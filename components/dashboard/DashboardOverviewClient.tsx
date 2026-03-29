@@ -197,11 +197,22 @@ export function DashboardOverviewClient({ roleName, permissions, userName }: Pro
                   <Link
                     key={action.href}
                     href={action.href}
-                    className="no-underline flex items-center justify-between px-6 py-3.5 border-b border-light-gray last:border-0 hover:bg-[#F7F6F3] transition-colors group"
+                    className="no-underline flex items-center justify-between px-6 py-3.5 border-b border-light-gray last:border-0 hover:bg-amber-50/60 transition-colors group relative"
                     style={{ borderWidth: i === quickActions.length - 1 ? '0' : '0 0 0.5px 0' }}
                   >
-                    <span className={`font-sans text-[13px] ${i === 0 ? 'font-medium text-charcoal' : 'text-charcoal'}`}>{action.label}</span>
-                    <svg className="text-taupe group-hover:text-charcoal transition-colors flex-shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    {/* Gold left accent bar on hover */}
+                    <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-gold rounded-r-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-3">
+                      {/* Coloured dot */}
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: i === 0 ? '#C9A84C' : i === 1 ? '#1F1F1F' : i % 3 === 2 ? '#8B7355' : '#C9A84C', opacity: i === 0 ? 1 : 0.45 }}
+                      />
+                      <span className={`font-sans text-[13px] ${i === 0 ? 'font-semibold text-charcoal' : 'font-medium text-charcoal/80 group-hover:text-charcoal'} transition-colors`}>
+                        {action.label}
+                      </span>
+                    </div>
+                    <svg className="text-taupe group-hover:text-gold transition-colors flex-shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                   </Link>
                 ))}
               </div>

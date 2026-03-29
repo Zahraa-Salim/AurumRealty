@@ -198,7 +198,6 @@ export default function PropertyDetailPage() {
   )
 
   const images = (property?.images?.length ?? 0) > 0 ? property.images : ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80']
-  const agentInitials = property?.agentName ? property.agentName.split(' ').map((n:string)=>n[0]).join('') : 'AU'
   const statusBadge:Record<string,string> = {'For Sale':'bg-charcoal text-white','For Rent':'bg-gold text-charcoal','New Development':'bg-white/90 text-charcoal'}
 
   return (
@@ -290,7 +289,9 @@ export default function PropertyDetailPage() {
             {property.agentName&&(
               <div className="bg-cream rounded-sm p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-                  <span className="font-sans text-[14px] font-medium text-charcoal">{agentInitials}</span>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+                  </svg>
                 </div>
                 <div>
                   <p className="font-serif text-[15px] text-charcoal mb-0.5">{property.agentName}</p>

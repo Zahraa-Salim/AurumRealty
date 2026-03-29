@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = localeCookie === 'ar' ? 'ar' : 'en'
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-scroll-behavior="smooth">
       <head>
         <link
           href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"

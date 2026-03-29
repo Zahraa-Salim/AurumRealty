@@ -98,9 +98,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             `}
           >
             <div className="w-8 h-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center flex-shrink-0" style={{ borderWidth: '0.5px' }}>
-              <span className="font-sans text-[12px] font-semibold text-charcoal">
-                {session?.user?.name?.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'AU'}
-              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+              </svg>
             </div>
             <div className="flex flex-col overflow-hidden min-w-0">
               <span className="font-sans text-[13px] font-medium text-charcoal truncate leading-tight">

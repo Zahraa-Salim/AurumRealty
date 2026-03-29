@@ -54,7 +54,9 @@ export function DashboardTopBar({ title, breadcrumbs, onMenuClick }: TopBarProps
 
       {/* User avatar */}
       <div className="w-9 h-9 rounded-full bg-light-gray flex items-center justify-center cursor-pointer hover:bg-light-gray/80 transition-colors">
-        <span className="font-sans text-[13px] font-medium text-charcoal">AU</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+        </svg>
       </div>
     </header>
   )

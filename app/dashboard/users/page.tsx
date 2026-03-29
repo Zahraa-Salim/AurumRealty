@@ -40,9 +40,6 @@ type RoleForm = {
 
 type TabKey = 'users' | 'roles'
 
-const initials = (name: string) =>
-  name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase()
-
 const fmtLastActive = (value: string | null) => {
   if (!value) return 'Never'
   const diff = Date.now() - new Date(value).getTime()
@@ -433,7 +430,9 @@ export default function DashboardUsersRolesPage() {
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-light-gray flex items-center justify-center">
-                          <span className="font-sans text-[12px] font-medium text-charcoal">{initials(user.name)}</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+                          </svg>
                         </div>
                         <div>
                           <p className="font-sans text-[14px] text-charcoal font-medium">{user.name}</p>

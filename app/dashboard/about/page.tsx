@@ -43,6 +43,8 @@ export default function DashboardAboutEditorPage() {
 
   const [storyAr, setStoryAr] = useState({ titleAr: '', subtitleAr: '', paragraphsAr: [] as string[] })
   const [ctaAr, setCtaAr] = useState({ titleAr: '', subtitleAr: '', linkTextAr: '' })
+  const [teamAr, setTeamAr] = useState<{ titleAr: string; members: Array<{ nameAr: string; roleAr: string; bioAr: string }> }>({ titleAr: '', members: [] })
+  const [valuesAr, setValuesAr] = useState<{ titleAr: string; items: Array<{ labelAr: string; descAr: string }> }>({ titleAr: '', items: [] })
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
@@ -69,8 +71,10 @@ export default function DashboardAboutEditorPage() {
         setCta(ctaContent)
 
         // Read Arabic fields from raw DB records
-        const storyRaw = contentMap.get('about_story')
-        const ctaRaw   = contentMap.get('about_cta')
+        const storyRaw  = contentMap.get('about_story')
+        const ctaRaw    = contentMap.get('about_cta')
+        const teamRaw   = contentMap.get('about_team')
+        const valuesRaw = contentMap.get('about_values')
 
         let paragraphsAr: string[] = []
         if (storyRaw?.bodyAr) {
@@ -93,6 +97,24 @@ export default function DashboardAboutEditorPage() {
           subtitleAr: ctaRaw?.subtitleAr ?? '',
           linkTextAr: ctaRaw?.linkTextAr ?? '',
         })
+
+        // Arabic team members
+        const teamArParsed = (() => {
+          try { return teamRaw?.bodyAr ? JSON.parse(teamRaw.bodyAr) as { title?: string; members?: Array<{ name: string; role: string; bio: string; image: string }> } : null } catch { return null }
+        })()
+        const teamArMembers = (teamArParsed?.members ?? []).map(m => ({ nameAr: m.name ?? '', roleAr: m.role ?? '', bioAr: m.bio ?? '' }))
+        const teamLength = (parseAboutTeamContent(teamRaw)).members.length
+        while (teamArMembers.length < teamLength) teamArMembers.push({ nameAr: '', roleAr: '', bioAr: '' })
+        setTeamAr({ titleAr: (teamRaw as any)?.titleAr ?? teamArParsed?.title ?? '', members: teamArMembers })
+
+        // Arabic values
+        const valuesArParsed = (() => {
+          try { return valuesRaw?.bodyAr ? JSON.parse(valuesRaw.bodyAr) as { title?: string; items?: Array<{ label: string; desc: string }> } : null } catch { return null }
+        })()
+        const valuesArItems = (valuesArParsed?.items ?? []).map(i => ({ labelAr: i.label ?? '', descAr: i.desc ?? '' }))
+        const valuesLength = (parseAboutValuesContent(valuesRaw)).items.length
+        while (valuesArItems.length < valuesLength) valuesArItems.push({ labelAr: '', descAr: '' })
+        setValuesAr({ titleAr: (valuesRaw as any)?.titleAr ?? valuesArParsed?.title ?? '', items: valuesArItems })
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load about page content.')
       } finally {
@@ -117,13 +139,21 @@ export default function DashboardAboutEditorPage() {
     setSuccess('')
 
     try {
+      // Serialize Arabic team members
+      const arTeamMembers = teamAr.members.filter(m => m.nameAr || m.roleAr || m.bioAr).map(m => ({ name: m.nameAr, role: m.roleAr, bio: m.bioAr, image: '' }))
+      const teamBodyAr = arTeamMembers.length > 0 ? JSON.stringify({ title: teamAr.titleAr, members: arTeamMembers }) : null
+
+      // Serialize Arabic values
+      const arValItems = valuesAr.items.filter(i => i.labelAr || i.descAr).map(i => ({ label: i.labelAr, desc: i.descAr }))
+      const valuesBodyAr = arValItems.length > 0 ? JSON.stringify({ title: valuesAr.titleAr, items: arValItems }) : null
+
       const res = await fetch('/api/site-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
           { ...toAboutStoryEntry(story), titleAr: storyAr.titleAr || null, subtitleAr: storyAr.subtitleAr || null, bodyAr: storyAr.paragraphsAr.filter(Boolean).length > 0 ? JSON.stringify({ paragraphs: storyAr.paragraphsAr.filter(Boolean) }) : null },
-          toAboutTeamEntry(team),
-          toAboutValuesEntry(values),
+          { ...toAboutTeamEntry(team), titleAr: teamAr.titleAr || null, bodyAr: teamBodyAr },
+          { ...toAboutValuesEntry(values), titleAr: valuesAr.titleAr || null, bodyAr: valuesBodyAr },
           { ...toCtaEntry('about_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkTextAr || null },
         ]),
       })
@@ -334,6 +364,43 @@ export default function DashboardAboutEditorPage() {
         </div>
       </Section>
 
+      <Section title="Team members — Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Section title (AR)">
+            <input
+              type="text"
+              value={teamAr.titleAr}
+              onChange={(e) => setTeamAr(current => ({ ...current, titleAr: e.target.value }))}
+              dir="rtl" lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {teamAr.members.map((arMember, index) => (
+              <div key={`team-ar-${index}`} className="p-5 border border-light-gray rounded-sm bg-light-gray/5 space-y-4" style={{ borderWidth: '0.5px' }}>
+                <p className="font-sans text-[12px] text-taupe">{team.members[index]?.name ?? `Member ${index + 1}`}</p>
+                <Field label="Name (AR)">
+                  <input type="text" value={arMember.nameAr}
+                    onChange={(e) => setTeamAr(current => ({ ...current, members: current.members.map((m, i) => i === index ? { ...m, nameAr: e.target.value } : m) }))}
+                    dir="rtl" lang="ar" className={inputCls} style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} />
+                </Field>
+                <Field label="Role (AR)">
+                  <input type="text" value={arMember.roleAr}
+                    onChange={(e) => setTeamAr(current => ({ ...current, members: current.members.map((m, i) => i === index ? { ...m, roleAr: e.target.value } : m) }))}
+                    dir="rtl" lang="ar" className={inputCls} style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} />
+                </Field>
+                <Field label="Bio (AR)">
+                  <textarea rows={5} value={arMember.bioAr}
+                    onChange={(e) => setTeamAr(current => ({ ...current, members: current.members.map((m, i) => i === index ? { ...m, bioAr: e.target.value } : m) }))}
+                    dir="rtl" lang="ar" className={textAreaCls} style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} />
+                </Field>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
       <Section title="Values">
         <div className="space-y-4">
           <Field label="Section title">
@@ -380,6 +447,38 @@ export default function DashboardAboutEditorPage() {
                     className={textAreaCls}
                     style={{ borderWidth: '0.5px' }}
                   />
+                </Field>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Values — Arabic (optional)">
+        <div className="space-y-4">
+          <Field label="Section title (AR)">
+            <input
+              type="text"
+              value={valuesAr.titleAr}
+              onChange={(e) => setValuesAr(current => ({ ...current, titleAr: e.target.value }))}
+              dir="rtl" lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {valuesAr.items.map((arItem, index) => (
+              <div key={`value-ar-${index}`} className="space-y-3">
+                <p className="font-sans text-[12px] text-taupe">{values.items[index]?.label ?? `Value ${index + 1}`}</p>
+                <Field label="Title (AR)">
+                  <input type="text" value={arItem.labelAr}
+                    onChange={(e) => setValuesAr(current => ({ ...current, items: current.items.map((it, i) => i === index ? { ...it, labelAr: e.target.value } : it) }))}
+                    dir="rtl" lang="ar" className={inputCls} style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} />
+                </Field>
+                <Field label="Body (AR)">
+                  <textarea rows={5} value={arItem.descAr}
+                    onChange={(e) => setValuesAr(current => ({ ...current, items: current.items.map((it, i) => i === index ? { ...it, descAr: e.target.value } : it) }))}
+                    dir="rtl" lang="ar" className={textAreaCls} style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }} />
                 </Field>
               </div>
             ))}

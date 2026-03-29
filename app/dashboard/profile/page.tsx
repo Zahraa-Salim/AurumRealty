@@ -63,14 +63,6 @@ export default function DashboardProfilePage() {
   const accessSummary = accessHighlights.length > 0
     ? `You can ${accessHighlights.join(', ')}.`
     : 'Your account has limited dashboard access right now.'
-  const initials = displayName
-    .split(' ')
-    .filter(Boolean)
-    .map(part => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase() || 'AU'
-
   const handlePasswordUpdate = async () => {
     if (!session?.user?.id) {
       setPasswordError('You must be signed in to change your password.')
@@ -141,7 +133,9 @@ export default function DashboardProfilePage() {
       {/* Avatar header */}
       <div className="bg-white border border-light-gray rounded-sm p-8 flex items-center gap-6" style={{ borderWidth:'0.5px' }}>
         <div className="w-20 h-20 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-gold/30 transition-colors group relative">
-          <span className="font-sans text-[24px] font-medium text-charcoal">{initials}</span>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+          </svg>
           <div className="absolute inset-0 rounded-full bg-charcoal/0 group-hover:bg-charcoal/10 transition-colors flex items-center justify-center">
             <span className="font-sans text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity">Change</span>
           </div>

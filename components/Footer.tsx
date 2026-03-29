@@ -21,8 +21,8 @@ export const revalidate = 60
 // ─── Defaults (shown when DB has no saved values) ────────────────────────────
 
 const DEFAULTS = {
-  tagline:    'Founded 2010. Luxury properties for discerning buyers. For over a decade we have guided discerning buyers and sellers through the most significant real estate decisions of their lives — with discretion, expertise, and an unwavering commitment to excellence.',
-  taglineAr:  'تأسست عام 2010. عقارات فاخرة لأصحاب الذوق الرفيع. لأكثر من عقد، كنا المرشد الموثوق للمشترين والبائعين في أهم قراراتهم العقارية — بسرية تامة وخبرة عميقة والتزام راسخ بمصالح عملائنا.',
+  tagline:    'Founded 2010. Luxury properties for discerning buyers.',
+  taglineAr:  'تأسست عام 2010. عقارات فاخرة لأصحاب الذوق الرفيع.',
   phone:      '+1 (555) 123-4567',
   email:      'hello@aurumrealty.com',
   address:    '123 Luxury Avenue\nSuite 400\nNew York, NY 10022',

@@ -41,10 +41,6 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function initials(name: string): string {
-  return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
-}
-
 const ACTIVITY_LABEL: Record<string, string> = {
   showing: 'Showing request', enquiry: 'Agent enquiry', message: 'Contact message',
 }
@@ -236,7 +232,9 @@ function ActivityRow({ item, isLast }: { item: DashboardActivityItem; isLast: bo
       style={{ borderWidth: isLast ? '0' : '0 0 0.5px 0' }}
     >
       <div className="w-7 h-7 rounded-full bg-light-gray/50 flex items-center justify-center flex-shrink-0">
-        <span className="font-sans text-[10px] font-medium text-charcoal">{initials(item.personName)}</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+        </svg>
       </div>
       <div className="flex-1 min-w-0">
         <p className="font-sans text-[13px] text-charcoal leading-snug truncate">

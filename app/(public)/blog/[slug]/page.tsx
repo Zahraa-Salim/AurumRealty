@@ -76,7 +76,6 @@ export default async function BlogPostPage({
   const rawBody   = (locale === 'ar' && (post as any).bodyAr) ? (post as any).bodyAr : post.body
 
   const fmt=(d:Date|string|null)=>d?new Date(d).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US',{year:'numeric',month:'long',day:'numeric'}):''
-  const initials=(name:string)=>name.split(' ').map((n:string)=>n[0]).join('')
 
   const isHtml = (rawBody || '').trimStart().startsWith('<')
   const bodyHtml = isHtml
@@ -106,7 +105,9 @@ export default async function BlogPostPage({
         {subtitle && <p className="font-sans text-[17px] text-taupe leading-[1.7] mb-8 border-l-[3px] border-gold pl-5 italic">{subtitle}</p>}
         <div className="flex items-center gap-4 pb-8 border-b border-light-gray mb-10" style={{borderWidth:'0 0 0.5px 0'}}>
           <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-            <span className="font-sans text-[13px] font-medium text-charcoal">{initials(post.author)}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+            </svg>
           </div>
           <div>
             <p className="font-sans text-[14px] font-medium text-charcoal">{post.author}</p>
@@ -125,7 +126,9 @@ export default async function BlogPostPage({
         )}
         <div className="mt-14 pt-8 border-t border-light-gray flex items-start gap-5" style={{borderWidth:'0.5px 0 0 0'}}>
           <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
-            <span className="font-sans text-[16px] font-medium text-charcoal">{initials(post.author)}</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+            </svg>
           </div>
           <div>
             <p className="font-sans text-[15px] font-medium text-charcoal mb-1">{post.author}</p>

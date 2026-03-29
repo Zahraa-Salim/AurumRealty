@@ -37,18 +37,34 @@ export default async function AboutPage() {
   const valuesContent = parseAboutValuesContent(_values)
   const ctaContent    = parseCtaContent(_cta, ABOUT_CTA_DEFAULTS)
 
+  // Cast to any to access AR fields until Prisma client is regenerated (same pattern as blog/[slug]/page.tsx)
+  const _storyAny  = _story  as any
+  const _teamAny   = _team   as any
+  const _valuesAny = _values as any
+  const _ctaAny    = _cta    as any
+
   // Apply Arabic overrides
   if (locale === 'ar') {
-    storyContent.title      = localise(storyContent.title,    _story?.titleAr,    locale)
-    storyContent.subtitle   = localise(storyContent.subtitle, _story?.subtitleAr, locale)
-    storyContent.paragraphs = getParagraphsFromBody(_story?.bodyAr, storyContent.paragraphs)
-    ctaContent.title    = localise(ctaContent.title,    _cta?.titleAr,    locale)
-    ctaContent.subtitle = localise(ctaContent.subtitle, _cta?.subtitleAr, locale)
-    ctaContent.linkText = localise(ctaContent.linkText, _cta?.linkTextAr, locale)
+    storyContent.title      = localise(storyContent.title,    _storyAny?.titleAr,    locale)
+    storyContent.subtitle   = localise(storyContent.subtitle, _storyAny?.subtitleAr, locale)
+    storyContent.paragraphs = getParagraphsFromBody(_storyAny?.bodyAr, storyContent.paragraphs)
+    ctaContent.title    = localise(ctaContent.title,    _ctaAny?.titleAr,    locale)
+    ctaContent.subtitle = localise(ctaContent.subtitle, _ctaAny?.subtitleAr, locale)
+    ctaContent.linkText = localise(ctaContent.linkText, _ctaAny?.linkTextAr, locale)
+    // Use Arabic team members if available
+    if (_teamAny?.bodyAr) {
+      const arTeam = parseAboutTeamContent({ ..._team, body: _teamAny.bodyAr } as any)
+      if (arTeam.members.length > 0) teamContent.members = arTeam.members
+    }
+    // Use Arabic values if available
+    if (_valuesAny?.bodyAr) {
+      const arVals = parseAboutValuesContent({ ..._values, body: _valuesAny.bodyAr } as any)
+      if (arVals.items.length > 0) valuesContent.items = arVals.items
+    }
   }
 
-  const teamTitle   = locale === 'ar' ? localise(teamContent.title   || ABOUT_TEAM_DEFAULTS.title,   _team?.titleAr,   locale) : (teamContent.title   || ABOUT_TEAM_DEFAULTS.title)
-  const valuesTitle = locale === 'ar' ? localise(valuesContent.title || ABOUT_VALUES_DEFAULTS.title, _values?.titleAr, locale) : (valuesContent.title || ABOUT_VALUES_DEFAULTS.title)
+  const teamTitle   = locale === 'ar' ? localise(teamContent.title   || ABOUT_TEAM_DEFAULTS.title,   _teamAny?.titleAr,   locale) : (teamContent.title   || ABOUT_TEAM_DEFAULTS.title)
+  const valuesTitle = locale === 'ar' ? localise(valuesContent.title || ABOUT_VALUES_DEFAULTS.title, _valuesAny?.titleAr, locale) : (valuesContent.title || ABOUT_VALUES_DEFAULTS.title)
 
   return (
     <main className="w-full bg-white">
@@ -82,8 +98,7 @@ export default async function AboutPage() {
             {teamTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {teamContent.members.map((m, index) => {
-              const initials = m.name.split(' ').filter(Boolean).map(p=>p[0]).join('').slice(0,2).toUpperCase()
+            {teamContent.members.map((m) => {
               return (
                 <div key={m.name} className="bg-white p-8 rounded-sm" style={{borderWidth:'0.5px'}}>
                   {m.image ? (
@@ -91,7 +106,9 @@ export default async function AboutPage() {
                     <img src={m.image} alt={m.name} className="w-16 h-16 rounded-full object-cover mb-5" />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-5">
-                      <span className="font-sans text-[18px] font-medium text-charcoal">{initials || `T${index+1}`}</span>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+                      </svg>
                     </div>
                   )}
                   <h3 className="font-serif text-[20px] text-charcoal mb-1">{m.name}</h3>

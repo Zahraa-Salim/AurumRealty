@@ -53,7 +53,7 @@ export default function DashboardServicesEditorPage() {
 
   const [headerAr, setHeaderAr] = useState({ titleAr: '', subtitleAr: '' })
   const [ctaAr, setCtaAr] = useState({ titleAr: '', subtitleAr: '', linkText: '' })
-  const [servicesAr, setServicesAr] = useState<Record<string, { titleAr: string; paragraphsAr: string[] }>>({})
+  const [servicesAr, setServicesAr] = useState<Record<string, { titleAr: string; paragraphsAr: string[]; pointsAr: string[] }>>({})
 
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
@@ -95,23 +95,25 @@ export default function DashboardServicesEditorPage() {
         setServices(loadedServices)
 
         // Load Arabic translations for services
-        const arMap: Record<string, { titleAr: string; paragraphsAr: string[] }> = {}
+        const arMap: Record<string, { titleAr: string; paragraphsAr: string[]; pointsAr: string[] }> = {}
         keys.forEach((key) => {
           const content = contentMap.get(key)
           if (content) {
             let paragraphsAr: string[] = []
+            let pointsAr: string[] = []
             if (content.bodyAr) {
               try {
-                const parsed = JSON.parse(content.bodyAr) as { paragraphs?: string[] }
+                const parsed = JSON.parse(content.bodyAr) as { paragraphs?: string[]; points?: string[] }
                 if (Array.isArray(parsed?.paragraphs)) paragraphsAr = parsed.paragraphs
+                if (Array.isArray(parsed?.points))     pointsAr     = parsed.points
               } catch {
-                // plain text fallback
                 paragraphsAr = content.bodyAr.split('\n\n').filter(Boolean)
               }
             }
             arMap[key] = {
               titleAr: content.titleAr ?? '',
               paragraphsAr,
+              pointsAr,
             }
           }
         })
@@ -149,12 +151,14 @@ export default function DashboardServicesEditorPage() {
           { ...toServicesHeaderEntry(header), titleAr: headerAr.titleAr || null, subtitleAr: headerAr.subtitleAr || null },
           toServicesIndexEntry({ keys: serviceKeys }),
           ...services.map((service) => {
-            const ar = servicesAr[service.key] || { titleAr: '', paragraphsAr: [] }
-            const cleanAr = ar.paragraphsAr.filter(Boolean)
+            const ar = servicesAr[service.key] || { titleAr: '', paragraphsAr: [], pointsAr: [] }
+            const cleanParAr = ar.paragraphsAr.filter(Boolean)
+            const cleanPtsAr = ar.pointsAr.filter(Boolean)
+            const hasAr = cleanParAr.length > 0 || cleanPtsAr.length > 0
             return {
               ...toServiceSectionEntry(service),
               titleAr: ar.titleAr || null,
-              bodyAr: cleanAr.length > 0 ? JSON.stringify({ paragraphs: cleanAr }) : null,
+              bodyAr: hasAr ? JSON.stringify({ paragraphs: cleanParAr, points: cleanPtsAr }) : null,
             }
           }),
           { ...toCtaEntry('services_cta', cta), titleAr: ctaAr.titleAr || null, subtitleAr: ctaAr.subtitleAr || null, linkTextAr: ctaAr.linkText || null },
@@ -183,6 +187,7 @@ export default function DashboardServicesEditorPage() {
     const newService = makeDefaultService(newKey, serviceKeys.length)
     setServiceKeys(current => [...current, newKey])
     setServices(current => [...current, newService])
+    setServicesAr(current => ({ ...current, [newKey]: { titleAr: '', paragraphsAr: [''], pointsAr: [''] } }))
   }
 
   const deleteService = async (index: number) => {
@@ -400,7 +405,7 @@ export default function DashboardServicesEditorPage() {
                     <button
                       type="button"
                       onClick={() => setServicesAr(current => {
-                        const ar = current[service.key] || { titleAr: '', paragraphsAr: [] }
+                        const ar = current[service.key] || { titleAr: '', paragraphsAr: [], pointsAr: [] }
                         return {
                           ...current,
                           [service.key]: { ...ar, paragraphsAr: [...ar.paragraphsAr, ''] }
@@ -410,6 +415,49 @@ export default function DashboardServicesEditorPage() {
                       style={{ borderWidth: '0.5px' }}
                     >
                       Add paragraph (AR)
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-sans text-[13px] font-medium text-charcoal mb-3 block">Bullet points (AR)</label>
+                  <div className="space-y-2">
+                    {(servicesAr[service.key]?.pointsAr ?? []).map((pt, ptIndex) => (
+                      <div key={`${service.key}-pt-${ptIndex}`} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={pt}
+                          onChange={(e) => setServicesAr(current => {
+                            const ar = current[service.key] || { titleAr: '', paragraphsAr: [], pointsAr: [] }
+                            const newPoints = ar.pointsAr.map((p, i) => i === ptIndex ? e.target.value : p)
+                            return { ...current, [service.key]: { ...ar, pointsAr: newPoints } }
+                          })}
+                          dir="rtl"
+                          lang="ar"
+                          className={`flex-1 ${inputCls}`}
+                          style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setServicesAr(current => {
+                            const ar = current[service.key] || { titleAr: '', paragraphsAr: [], pointsAr: [] }
+                            return { ...current, [service.key]: { ...ar, pointsAr: ar.pointsAr.filter((_, i) => i !== ptIndex) } }
+                          })}
+                          disabled={(servicesAr[service.key]?.pointsAr ?? []).length === 1}
+                          className="w-[40px] h-[44px] text-[18px] text-taupe hover:text-error bg-light-gray/20 border-none rounded-sm cursor-pointer disabled:opacity-40"
+                        >×</button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setServicesAr(current => {
+                        const ar = current[service.key] || { titleAr: '', paragraphsAr: [], pointsAr: [] }
+                        return { ...current, [service.key]: { ...ar, pointsAr: [...ar.pointsAr, ''] } }
+                      })}
+                      className="px-4 py-2 rounded-full font-sans text-[13px] font-medium text-charcoal bg-transparent border border-charcoal hover:bg-light-gray/20 transition-colors"
+                      style={{ borderWidth: '0.5px' }}
+                    >
+                      Add bullet point (AR)
                     </button>
                   </div>
                 </div>

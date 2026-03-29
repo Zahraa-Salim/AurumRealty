@@ -156,9 +156,9 @@ export default function BlogClientFilter({ posts, locale }: { posts: Post[]; loc
                   <div className="flex items-center justify-between pt-4 border-t border-light-gray" style={{ borderWidth: '0.5px 0 0 0' }}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-light-gray flex items-center justify-center flex-shrink-0">
-                        <span className="font-sans text-[10px] font-medium text-charcoal">
-                          {post.author.split(' ').map(n => n[0]).join('')}
-                        </span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6"/>
+                        </svg>
                       </div>
                       <span className="font-sans text-[12px] text-charcoal">{post.author}</span>
                     </div>

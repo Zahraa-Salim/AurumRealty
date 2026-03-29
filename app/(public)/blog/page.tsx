@@ -4,18 +4,26 @@
  * Client-side topic filter uses 'use client' wrapper component below.
  */
 import React from 'react'
-import type { BlogPost } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { getServerLocale } from '@/lib/locale-server'
-import { localise, type Locale } from '@/lib/i18n'
+import { type Locale } from '@/lib/i18n'
 import BlogClientFilter from './BlogClientFilter'
 
 export const revalidate = 60
 
-type BlogListPost = Pick<
-  BlogPost,
-  'id' | 'slug' | 'title' | 'titleAr' | 'topic' | 'author' | 'subtitle' | 'subtitleAr' | 'heroImage' | 'readTime' | 'publishedAt'
->
+type BlogListPost = {
+  id: number
+  slug: string
+  title: string
+  titleAr: string | null
+  topic: string
+  author: string
+  subtitle: string | null
+  subtitleAr: string | null
+  heroImage: string | null
+  readTime: string | null
+  publishedAt: Date | null
+}
 
 export default async function BlogPage() {
   const locale = (await getServerLocale()) as Locale

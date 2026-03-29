@@ -8,7 +8,22 @@ datasource db {
 }
 
 // ─── PROPERTIES ───────────────────────────────────────────────────────────────
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String   // hashed — never store plain text
+  role       String   @default("Editor") // legacy display field kept in sync with assignedRole.name
+  roleId     Int?
+  permissionsVersion Int @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  lastActive DateTime?
 
+  assignedRole     Role?           @relation("AssignedRole", fields: [roleId], references: [id], onDelete: SetNull)
+  assignedShowings Showing[]       @relation("AssignedShowings")
+  assignedMessages ContactMessage[] @relation("AssignedMessages")
+}
 model Property {
   id            Int       @id @default(autoincrement())
   title         String
@@ -116,22 +131,7 @@ model ContactMessage {
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
 
-model User {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  password   String   // hashed — never store plain text
-  role       String   @default("Editor") // legacy display field kept in sync with assignedRole.name
-  roleId     Int?
-  permissionsVersion Int @default(0)
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  lastActive DateTime?
 
-  assignedRole     Role?           @relation("AssignedRole", fields: [roleId], references: [id], onDelete: SetNull)
-  assignedShowings Showing[]       @relation("AssignedShowings")
-  assignedMessages ContactMessage[] @relation("AssignedMessages")
-}
 
 model Role {
   id              Int              @id @default(autoincrement())

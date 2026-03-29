@@ -153,7 +153,7 @@ export default async function BlogPostPage({
                   <img src={r.heroImage??'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80'} alt={r.title} className="w-full h-[180px] object-cover transition-transform duration-500 group-hover:scale-105"/>
                 </div>
                 <span className="inline-block font-sans text-[11px] font-medium px-2.5 py-1 rounded-full mb-2" style={topicColor[r.topic] ?? { bg: '#F5E6D3', color: '#1F1F1F' }}>{localiseLabel(r.topic, TOPIC_AR, locale)}</span>
-                <h3 className="font-serif text-[17px] text-charcoal leading-[1.3] group-hover:text-taupe transition-colors">{localise(r.title, (r as any).titleAr, locale)}</h3>
+                <h3 className="font-serif text-[17px] text-charcoal leading-[1.3] group-hover:text-taupe transition-colors">{localise(r.title, r.titleAr, locale)}</h3>
                 <p className="font-sans text-[12px] text-taupe mt-2">{r.author}{r.readTime?` · ${localiseReadTime(r.readTime, locale)}`:''}</p>
               </Link>
             ))}

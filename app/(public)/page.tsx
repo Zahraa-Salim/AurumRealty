@@ -154,6 +154,8 @@ export default async function HomePage() {
     ctaContent.title    = localise(ctaContent.title,    _cta?.titleAr,    locale)
     ctaContent.subtitle = localise(ctaContent.subtitle, _cta?.subtitleAr, locale)
     ctaContent.linkText = localise(ctaContent.linkText, _cta?.linkTextAr, locale)
+    journalContent.label      = localise(journalContent.label,      _journal?.titleAr,    locale)
+    journalContent.buttonText = localise(journalContent.buttonText, _journal?.linkTextAr, locale)
   }
 
   const statusBadge:Record<string,string> = {

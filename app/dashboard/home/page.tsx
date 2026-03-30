@@ -59,6 +59,7 @@ export default function DashboardHomeEditorPage() {
   const [servicesAr, setServicesAr] = useState({ title: '', subtitle: '' })
   const [aboutAr, setAboutAr] = useState({ title: '', subtitle: '', body: '' })
   const [ctaAr, setCtaAr] = useState({ title: '', subtitle: '', linkText: '' })
+  const [journalAr, setJournalAr] = useState({ label: '', buttonText: '' })
   const canEdit = hasAnyPermission(session?.user?.permissions ?? [], ['pages.edit'])
 
   useEffect(() => {
@@ -120,6 +121,11 @@ export default function DashboardHomeEditorPage() {
           subtitle: ctaRaw?.subtitleAr ?? '',
           linkText: ctaRaw?.linkTextAr ?? '',
         })
+        const journalRaw = contentMap.get('home_journal')
+        setJournalAr({
+          label:      journalRaw?.titleAr    ?? '',
+          buttonText: journalRaw?.linkTextAr ?? '',
+        })
         setProperties(Array.isArray(propertyItems) ? propertyItems : [])
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Failed to load homepage content.')
@@ -158,7 +164,7 @@ export default function DashboardHomeEditorPage() {
           toHomeFeaturedPropertiesEntry({ propertyIds: featuredPropertyIds }),
           { ...toHomeServicesEntry(services), titleAr: servicesAr.title || null, subtitleAr: servicesAr.subtitle || null },
           { ...toHomeAboutEntry(about), titleAr: aboutAr.title || null, subtitleAr: aboutAr.subtitle || null, bodyAr: aboutAr.body || null },
-          toHomeJournalEntry(journal),
+          { ...toHomeJournalEntry(journal), titleAr: journalAr.label || null, linkTextAr: journalAr.buttonText || null },
           { ...toHomeCtaEntry(cta), titleAr: ctaAr.title || null, subtitleAr: ctaAr.subtitle || null, linkTextAr: ctaAr.linkText || null },
         ]),
       })
@@ -471,6 +477,33 @@ export default function DashboardHomeEditorPage() {
               onChange={(event) => setJournal((current) => ({ ...current, buttonText: event.target.value }))}
               className={inputCls}
               style={{ borderWidth: '0.5px' }}
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="Latest journal section — Arabic (optional)">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Label (AR)">
+            <input
+              type="text"
+              value={journalAr.label}
+              onChange={(event) => setJournalAr((current) => ({ ...current, label: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
+            />
+          </Field>
+          <Field label="Button label (AR)">
+            <input
+              type="text"
+              value={journalAr.buttonText}
+              onChange={(event) => setJournalAr((current) => ({ ...current, buttonText: event.target.value }))}
+              dir="rtl"
+              lang="ar"
+              className={inputCls}
+              style={{ fontFamily: 'var(--font-arabic)', borderWidth: '0.5px' }}
             />
           </Field>
         </div>

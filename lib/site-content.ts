@@ -5,10 +5,14 @@ type SiteContentRecord = SiteContent | null | undefined
 export type SiteContentEntryInput = {
   key: string
   title?: string | null
+  titleAr?: string | null
   subtitle?: string | null
+  subtitleAr?: string | null
   body?: string | null
+  bodyAr?: string | null
   image?: string | null
   linkText?: string | null
+  linkTextAr?: string | null
   linkUrl?: string | null
 }
 
@@ -43,6 +47,8 @@ export type HomeAboutContent = {
 export type HomeJournalContent = {
   label: string
   buttonText: string
+  labelAr?: string
+  buttonTextAr?: string
 }
 
 export type HomeCtaContent = {
@@ -450,6 +456,8 @@ export function parseHomeJournalContent(content: SiteContentRecord): HomeJournal
   return {
     label: content?.title ?? HOME_JOURNAL_DEFAULTS.label,
     buttonText: content?.linkText ?? HOME_JOURNAL_DEFAULTS.buttonText,
+    labelAr: content?.titleAr ?? undefined,
+    buttonTextAr: content?.linkTextAr ?? undefined,
   }
 }
 
@@ -457,7 +465,9 @@ export function toHomeJournalEntry(content: HomeJournalContent): SiteContentEntr
   return {
     key: 'home_journal',
     title: content.label,
+    titleAr: content.labelAr ?? null,
     linkText: content.buttonText,
+    linkTextAr: content.buttonTextAr ?? null,
   }
 }
 
